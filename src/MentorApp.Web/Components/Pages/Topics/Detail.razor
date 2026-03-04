@@ -1,0 +1,292 @@
+﻿@page "/topics/{TopicId:guid}"
+@implements IAsyncDisposable
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject ITopicQueryService TopicQuery
+@inject TopicService TopicService
+@inject ICurrentUserService AuthService
+@inject NavigationManager Navigation
+@inject ToastService ToastService
+@inject TopicUpdateNotificationService TopicUpdateNotificationService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>トピック詳細</PageTitle>
+
+<InteractiveLoader>
+    <div class="container-fluid mt-3">
+        <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="@PageRoutes.Topics">トピック一覧</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">トピック詳細</li>
+        </ol>
+    </nav>
+
+    @if (isLoading)
+    {
+        <LoadingSpinner Mode="SpinnerMode.Page" />
+    }
+    else if (topic is null)
+    {
+        <div class="alert alert-danger" role="alert">
+            ⚠️ 指定されたトピックが見つかりません。
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h1>@topic.Title</h1>
+                <p class="text-muted mb-0">
+                    👥
+                    @topic.MentorDisplayName
+                    →
+                    @topic.MenteeDisplayName
+                </p>
+            </div>
+            <div>
+                <span class="me-2">
+                    <TopicStatusBadge Status="topic.Status" />
+                </span>
+                @if (topic.Status == TopicStatus.Open)
+                {
+                    <button class="btn btn-outline-secondary" @onclick="CloseTopicAsync">
+                        クローズ
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">💬 メッセージ</h5>
+                    </div>
+                    <div @ref="messageContainer" class="card-body" style="max-height: 500px; overflow-y: auto;">
+                        @if (topic.Messages.Count == 0)
+                        {
+                            <div class="text-center text-muted py-4">
+                                <span class="fs-1">💬</span>
+                                <p class="mt-2">まだメッセージがありません。最初のメッセージを投稿しましょう。</p>
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var message in topic.Messages)
+                            {
+                                var isRightSide = IsRightSideMessage(message);
+                                <div class="d-flex @(isRightSide ? "justify-content-end" : "justify-content-start") mb-3">
+                                    <div class="message @(isRightSide ? "message-sent" : "message-received")" style="max-width: 70%;">
+                                        <div class="message-header mb-1">
+                                            <small class="text-muted">
+                                                <strong>@message.SenderDisplayName</strong>
+                                                <span class="mx-1">•</span>
+                                                @message.SentAt.FormatDateTime()
+                                            </small>
+                                        </div>
+                                        <div class="message-content p-3 @(isRightSide ? "message-content-sent bg-primary text-white" : "message-content-received bg-light")">
+                                            @message.Content
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                @* メッセージ投稿フォーム（管理者は閲覧のみのため非表示） *@
+                @if (currentUser?.Role != Role.Admin)
+                {
+                    @if (topic.Status == TopicStatus.Open)
+                    {
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">メッセージを投稿</h6>
+                                <EditForm EditContext="editContext.EditContext" OnSubmit="PostMessageAsync">
+                                    <div class="mb-3">
+                                        <label for="content" class="form-label">メッセージ</label>
+                                        <InputTextArea @bind-Value="messageForm.Content" class="form-control" id="content" rows="3" placeholder="メッセージを入力..." />
+                                        <ValidationMessage For="() => messageForm.Content" />
+                                    </div>
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-primary" disabled="@isPosting">
+                                            @if (isPosting)
+                                            {
+                                                <LoadingSpinner Mode="SpinnerMode.Inline" />
+                                                <span>投稿中...</span>
+                                            }
+                                            else
+                                            {
+                                                <text>📨</text>
+                                                <span> 投稿</span>
+                                            }
+                                        </button>
+                                    </div>
+                                </EditForm>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            🔒 このトピックはクローズされているため、メッセージを投稿できません。
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    }
+    </div>
+</InteractiveLoader>
+
+@code {
+    [Parameter]
+    public Guid TopicId { get; set; }
+
+    private TopicDetailDto? topic;
+    private CurrentUser? currentUser;
+    private bool isLoading = true;
+    private bool isPosting;
+    private MessageForm messageForm = new();
+    private DomainEditContext editContext = null!;
+    private ElementReference messageContainer;
+    private IJSObjectReference? jsModule;
+    private const string JsModulePath = "./Components/Pages/Topics/Detail.razor.js";
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await AuthService.GetCurrentUserAsync();
+
+        TopicUpdateNotificationService.OnTopicUpdated += HandleTopicUpdate;
+
+        InitializeEditContext();
+        if (currentUser is null) { isLoading = false; return; }
+        topic = await TopicQuery.GetByIdAsync(TopicId, currentUser);
+        isLoading = false;
+    }
+
+    private void InitializeEditContext()
+    {
+        editContext = new DomainEditContext(messageForm);
+        editContext.SetValidator(
+            (nameof(messageForm.Content), () => Message.ValidateContent(messageForm.Content))
+        );
+    }
+
+    private async void HandleTopicUpdate(Guid topicId)
+    {
+        if (topicId != TopicId || currentUser is null) return;
+
+        await InvokeAsync(async () =>
+        {
+            try
+            {
+                topic = await TopicQuery.GetByIdAsync(TopicId, currentUser);
+                StateHasChanged();
+                await ScrollToBottomAsync();
+            }
+            catch (Exception)
+            {
+                ToastService.ShowError("トピックの読み込みに失敗しました");
+            }
+        });
+    }
+
+    private async Task PostMessageAsync()
+    {
+        if (topic is null || currentUser is null) return;
+
+        if (!editContext.Validate()) return;
+
+        isPosting = true;
+
+        try
+        {
+            var request = new PostMessageRequest(
+                TopicId: topic.Id,
+                SenderUserId: currentUser.UserId,
+                Content: messageForm.Content!
+            );
+
+            await TopicService.PostMessageAsync(request, currentUser);
+
+            TopicUpdateNotificationService.NotifyTopicUpdated(topic.Id);
+
+            ToastService.ShowSuccess("メッセージを投稿しました。");
+
+            ResetForm();
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("メッセージの投稿に失敗しました");
+        }
+        finally
+        {
+            isPosting = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        messageForm = new MessageForm();
+        InitializeEditContext();
+    }
+
+    private async Task CloseTopicAsync()
+    {
+        if (topic is null || currentUser is null) return;
+
+        try
+        {
+            await TopicService.CloseTopicAsync(topic.Id, currentUser);
+
+            TopicUpdateNotificationService.NotifyTopicUpdated(topic.Id);
+
+            ToastService.ShowSuccess("トピックをクローズしました。");
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("トピックのクローズに失敗しました");
+        }
+    }
+
+    private bool IsRightSideMessage(MessageDto message)
+    {
+        if (currentUser is null || topic is null) return false;
+
+        var isParticipant = currentUser.UserId == topic.MentorUserId || currentUser.UserId == topic.MenteeUserId;
+        return isParticipant
+            ? message.SenderUserId == currentUser.UserId
+            : message.SenderUserId == topic.MentorUserId;
+    }
+
+    private async Task ScrollToBottomAsync()
+    {
+        jsModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", JsModulePath);
+        await jsModule.InvokeVoidAsync("scrollToBottom", messageContainer);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        TopicUpdateNotificationService.OnTopicUpdated -= HandleTopicUpdate;
+
+        try
+        {
+            if (jsModule is not null)
+            {
+                await jsModule.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // 回線切断時は正常終了として無視
+        }
+    }
+
+    private class MessageForm
+    {
+        public string? Content { get; set; }
+    }
+}

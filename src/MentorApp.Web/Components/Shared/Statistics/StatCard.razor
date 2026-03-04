@@ -1,0 +1,16 @@
+﻿@* 統計カード単体のコンポーネント *@
+<div class="col-md-@ColSize mb-3">
+    <h3 class="text-primary">@Value</h3>
+    <p class="text-muted">@Label</p>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public int Value { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public int ColSize { get; set; } = 4;
+}

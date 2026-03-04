@@ -1,0 +1,11 @@
+﻿@inject NavigationManager Navigation
+
+@code {
+    [Parameter, EditorRequired]
+    public required string Path { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo(Path, forceLoad: true);
+    }
+}

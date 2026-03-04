@@ -1,0 +1,219 @@
+﻿@using MentorApp.Domain.Models.Shared
+@inject IUserQueryService UserQuery
+@inject ICurrentUserService CurrentUserService
+@inject UserService UserService
+@inject ToastService ToastService
+
+@* ユーザー詳細フォーム（AdminDetail / Profile モード共用） *@
+
+@if (isLoading)
+{
+    <LoadingSpinner Mode="SpinnerMode.Page" />
+}
+else if (targetUser is null || editContext is null)
+{
+    <div class="alert alert-danger" role="alert">
+        ⚠️ ユーザーが見つかりません。
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h2 class="h5 mb-0">
+                        @if (IsAdminMode)
+                        {
+                            <text>ユーザー情報</text>
+                        }
+                        else
+                        {
+                            <text>👤 プロフィール</text>
+                        }
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <EditForm EditContext="editContext.EditContext" OnSubmit="OnSubmitAsync">
+
+                        @if (IsAdminMode)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">ユーザーID</label>
+                                <div class="form-control-plaintext">
+                                    <code>@targetUser.Id</code>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">External ID</label>
+                                <div class="form-control-plaintext">
+                                    <code>@targetUser.ExternalId</code>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label">メールアドレス</label>
+                            <div class="form-control-plaintext">
+                                @targetUser.Email
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="displayName" class="form-label">表示名</label>
+                            <InputText id="displayName" class="form-control" @bind-Value="updateModel.DisplayName" />
+                            <ValidationMessage For="() => updateModel.DisplayName" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role" class="form-label">ロール</label>
+                            @if (IsAdminMode)
+                            {
+                                <InputSelect id="role" class="form-select" @bind-Value="updateModel.Role">
+                                    <option value="@Role.Admin">管理者</option>
+                                    <option value="@Role.Mentor">メンター</option>
+                                    <option value="@Role.Mentee">メンティー</option>
+                                </InputSelect>
+                                <ValidationMessage For="() => updateModel.Role" />
+                            }
+                            else
+                            {
+                                <div class="form-control-plaintext">
+                                    <RoleBadge Role="@targetUser.Role" />
+                                </div>
+                                <small class="text-muted">ロールの変更は管理者に依頼してください。</small>
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">登録日時</label>
+                            <div class="form-control-plaintext">
+                                @targetUser.CreatedAt.FormatDateTimeFull()
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <LoadingSpinner Mode="SpinnerMode.Inline" />
+                            }
+                            else
+                            {
+                                <text>💾</text>
+                            }
+                            更新
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+
+            <UserMentorshipsSection UserId="@targetUser.Id"
+                                    UserRole="@targetUser.Role"
+                                    AllowEdit="@IsAdminMode" />
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid UserId { get; set; }
+
+    [Parameter]
+    public UserDetailFormMode Mode { get; set; } = UserDetailFormMode.Profile;
+
+    private UserDto? targetUser;
+    private CurrentUser? currentUser;
+    private UserUpdateModel updateModel = new();
+    private DomainEditContext? editContext;
+    private bool isLoading = true;
+    private bool isSaving;
+
+    private bool IsAdminMode => Mode == UserDetailFormMode.AdminDetail;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadUserAsync();
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        if (targetUser is null || currentUser is null || editContext is null || !editContext.Validate()) return;
+
+        isSaving = true;
+
+        try
+        {
+            var request = new UpdateUserRequest(targetUser.Id, updateModel.DisplayName!, updateModel.Role);
+            var updatedUser = await UserService.UpdateUserAsync(request, currentUser);
+
+            if (updatedUser is null)
+            {
+                ToastService.ShowInfo("変更はありませんでした。");
+                return;
+            }
+
+            await LoadUserAsync();
+            ToastService.ShowSuccess(IsAdminMode ? "ユーザー情報を更新しました。" : "プロフィールを更新しました。");
+        }
+        catch
+        {
+            ToastService.ShowError("更新に失敗しました");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task LoadUserAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            currentUser = await CurrentUserService.GetCurrentUserAsync();
+            if (currentUser is null) { targetUser = null; return; }
+
+            var resolvedId = ResolveTargetUserId(currentUser);
+            if (resolvedId == Guid.Empty) { targetUser = null; return; }
+
+            targetUser = await UserQuery.GetByIdAsync(resolvedId, currentUser);
+
+            if (targetUser is not null)
+            {
+                updateModel = new UserUpdateModel
+                {
+                    DisplayName = targetUser.DisplayName,
+                    Role = targetUser.Role
+                };
+                editContext = new DomainEditContext(updateModel);
+                editContext.SetValidator(
+                    (nameof(updateModel.DisplayName), () => User.ValidateDisplayName(updateModel.DisplayName))
+                );
+            }
+        }
+        catch
+        {
+            ToastService.ShowError("ユーザー情報の読み込みに失敗しました");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private Guid ResolveTargetUserId(CurrentUser currentUser)
+    {
+        if (Mode == UserDetailFormMode.Profile && UserId == Guid.Empty)
+            return currentUser.UserId;
+        return UserId;
+    }
+
+    private class UserUpdateModel
+    {
+        public string? DisplayName { get; set; }
+        public Role Role { get; set; }
+    }
+
+}

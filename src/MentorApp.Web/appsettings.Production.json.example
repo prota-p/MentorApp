@@ -1,0 +1,30 @@
+﻿{
+    "Persistence": {
+        "EnableSensitiveDataLogging": false,
+        "EnableDetailedErrors": false
+    },
+    "Authentication": {
+        "Provider": "EntraId",
+        "InitialAdmin": {
+            "ExternalId": "YOUR_ENTRA_OBJECT_ID",
+            "DisplayName": "管理者",
+            "Email": "admin@yourdomain.com"
+        },
+        "Providers": {
+            "EntraId": {
+                "TenantId": "YOUR_TENANT_ID",
+                "ClientId": "YOUR_CLIENT_ID",
+                "ClientSecret": "YOUR_CLIENT_SECRET"
+            },
+            "Google": {
+                "ClientId": "YOUR_GOOGLE_CLIENT_ID",
+                "ClientSecret": "YOUR_GOOGLE_CLIENT_SECRET"
+            }
+        }
+    },
+    "Serilog": {
+        "MinimumLevel": {
+            "Default": "Information"
+        }
+    }
+}

@@ -1,0 +1,16 @@
+﻿/*
+    TopicStatusBadge - ステータス別バッジのスタイル定義
+    Bootstrapのbadgeクラスを使用し、ドメイン固有の色のみ定義
+*/
+
+/* オープン: 緑系（アクティブなトピックを示す） */
+.status-open {
+    color: #fff;
+    background-color: #198754;
+}
+
+/* クローズ: グレー系（終了したトピックを示す） */
+.status-closed {
+    color: #fff;
+    background-color: #6c757d;
+}

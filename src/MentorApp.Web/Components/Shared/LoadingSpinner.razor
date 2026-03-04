@@ -1,0 +1,36 @@
+﻿@* 
+    ローディングスピナー共通コンポーネント
+*@
+
+@if (Mode == SpinnerMode.Inline)
+{
+    <span class="spinner-border spinner-border-sm me-2 @CssClass" role="status" aria-hidden="true">
+        <span class="visually-hidden">処理中...</span>
+    </span>
+}
+else
+{
+    <div class="d-flex justify-content-center align-items-center @CssClass" style="min-height: @MinHeightValue;">
+        <div class="spinner-border @SizeClass text-@ColorValue" role="status">
+            <span class="visually-hidden">読み込み中...</span>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public SpinnerMode Mode { get; set; } = SpinnerMode.Section;
+    [Parameter] public string CssClass { get; set; } = "";
+
+    private string MinHeightValue => Mode switch
+    {
+        SpinnerMode.Overlay => "100vh",
+        SpinnerMode.Page => "300px",
+        SpinnerMode.Section => "200px",
+        SpinnerMode.Compact => "100px",
+        _ => "200px"
+    };
+
+    private string ColorValue => Mode == SpinnerMode.Overlay ? "secondary" : "primary";
+
+    private string SizeClass => Mode == SpinnerMode.Compact ? "spinner-border-sm" : "";
+}

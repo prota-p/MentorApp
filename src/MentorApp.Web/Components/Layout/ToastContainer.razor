@@ -1,0 +1,80 @@
+﻿@implements IDisposable
+@rendermode InteractiveServer
+@inject ToastService ToastService
+
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    @foreach (var toast in ToastService.Messages)
+    {
+        <div class="toast show @GetToastClass(toast.Type)" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header @GetHeaderClass(toast.Type)">
+                <span class="me-2">@GetIconEmoji(toast.Type)</span>
+                <strong class="me-auto">@GetTitle(toast.Type)</strong>
+                <button type="button" class="btn-close @GetCloseButtonClass(toast.Type)" 
+                        @onclick="() => ToastService.Remove(toast.Id)" 
+                        aria-label="閉じる"></button>
+            </div>
+            <div class="toast-body">
+                @toast.Message
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        ToastService.OnChange += OnToastChanged;
+    }
+
+    private void OnToastChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnChange -= OnToastChanged;
+    }
+
+    private static string GetToastClass(ToastType type) => type switch
+    {
+        ToastType.Success => "border-success",
+        ToastType.Error => "border-danger",
+        ToastType.Warning => "border-warning",
+        ToastType.Info => "border-info",
+        _ => ""
+    };
+
+    private static string GetHeaderClass(ToastType type) => type switch
+    {
+        ToastType.Success => "bg-success text-white",
+        ToastType.Error => "bg-danger text-white",
+        ToastType.Warning => "bg-warning text-dark",
+        ToastType.Info => "bg-info text-white",
+        _ => ""
+    };
+
+    private static string GetCloseButtonClass(ToastType type) => type switch
+    {
+        ToastType.Warning => "",
+        _ => "btn-close-white"
+    };
+
+    private static string GetIconEmoji(ToastType type) => type switch
+    {
+        ToastType.Success => "✅",
+        ToastType.Error => "⚠️",
+        ToastType.Warning => "⚠️",
+        ToastType.Info => "ℹ️",
+        _ => ""
+    };
+
+    private static string GetTitle(ToastType type) => type switch
+    {
+        ToastType.Success => "成功",
+        ToastType.Error => "エラー",
+        ToastType.Warning => "警告",
+        ToastType.Info => "情報",
+        _ => ""
+    };
+}

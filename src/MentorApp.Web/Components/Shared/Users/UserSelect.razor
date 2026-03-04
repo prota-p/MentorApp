@@ -1,0 +1,78 @@
+﻿@inherits InputBase<Guid?>
+@inject IUserQueryService UserQuery
+@inject ICurrentUserService CurrentUserService
+@inject ToastService ToastService
+
+@if (!string.IsNullOrEmpty(Label))
+{
+    <label class="form-label">@Label</label>
+}
+<select class="form-select @SizeClass"
+        @bind="CurrentValueAsString"
+        disabled="@(isLoading || Disabled)">
+    <option value="">@Placeholder</option>
+    @foreach (var user in users)
+    {
+        <option value="@user.Id">@user.DisplayName</option>
+    }
+</select>
+
+@code {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "-- 選択 --";
+    [Parameter] public Role? FilterByRole { get; set; }
+    [Parameter] public FormSize Size { get; set; } = FormSize.Normal;
+    [Parameter] public bool Disabled { get; set; }
+
+    private IReadOnlyList<UserDto> users = [];
+    private bool isLoading = true;
+
+    private string SizeClass => Size == FormSize.Small ? "form-select-sm" : "";
+
+    protected override bool TryParseValueFromString(string? value, out Guid? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        validationErrorMessage = null;
+
+        if (string.IsNullOrEmpty(value))
+        {
+            result = null;
+            return true;
+        }
+
+        if (Guid.TryParse(value, out var guid))
+        {
+            result = guid;
+            return true;
+        }
+
+        result = null;
+        validationErrorMessage = $"'{value}' は有効な選択肢ではありません。";
+        return false;
+    }
+
+    protected override Task OnInitializedAsync() => LoadUsersAsync();
+
+    private async Task LoadUsersAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            var currentUser = await CurrentUserService.GetCurrentUserAsync();
+            if (currentUser is null) return;
+
+            users = FilterByRole.HasValue
+                ? await UserQuery.GetByRoleAsync(FilterByRole.Value, currentUser)
+                : await UserQuery.GetAccessibleAsync(currentUser);
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("ユーザーリストの読み込みに失敗しました");
+            users = [];
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

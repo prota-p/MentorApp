@@ -1,0 +1,104 @@
+﻿@page "/users"
+@rendermode InteractiveServer
+@inject IUserQueryService UserQuery
+@inject ICurrentUserService CurrentUserService
+@inject NavigationManager Navigation
+@inject ToastService ToastService
+@attribute [Authorize(Roles = nameof(Role.Admin))]
+
+<PageTitle>ユーザ一覧</PageTitle>
+
+<InteractiveLoader>
+    <div class="container-fluid mt-3">
+        <h1 class="mb-3">ユーザ一覧</h1>
+
+        @if (isLoading)
+        {
+            <LoadingSpinner Mode="SpinnerMode.Page" />
+        }
+        else if (IsEmpty)
+        {
+            <div class="alert alert-info" role="alert">
+                ℹ️ ユーザーが登録されていません。
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body p-0">
+                    <div>
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">表示名</th>
+                                    <th scope="col">ロール</th>
+                                    <th scope="col" class="d-none d-md-table-cell">External ID</th>
+                                    <th scope="col">登録日時</th>
+                                    <th scope="col">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in users!)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@user.DisplayName</strong>
+                                        </td>
+                                        <td>
+                                            <RoleBadge Role="@user.Role" />
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            <small class="text-muted">@user.ExternalId</small>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">@user.CreatedAt.FormatDateTime()</small>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    @onclick="() => Navigation.NavigateTo(string.Format(PageRoutes.UserDetail, user.Id))">
+                                                ✏️ 編集
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 text-muted">
+                <small>全 @users!.Count 件のユーザー</small>
+            </div>
+        }
+    </div>
+</InteractiveLoader>
+
+@code {
+    private IReadOnlyList<UserDto>? users;
+    private bool isLoading = true;
+
+    private bool IsEmpty => users is null || users.Count == 0;
+
+    protected override async Task OnInitializedAsync() => await LoadUsersAsync();
+
+    private async Task LoadUsersAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            var currentUser = await CurrentUserService.GetCurrentUserAsync();
+            if (currentUser is null) return;
+            users = await UserQuery.GetAccessibleAsync(currentUser);
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("ユーザ一覧の読み込みに失敗しました");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

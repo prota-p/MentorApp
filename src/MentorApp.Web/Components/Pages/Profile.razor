@@ -1,0 +1,13 @@
+﻿@page "/profile"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+<PageTitle>プロフィール</PageTitle>
+
+<InteractiveLoader>
+    <ChildContent>
+        <div class="container-fluid mt-3">
+            <UserDetailForm Mode="UserDetailFormMode.Profile" />
+        </div>
+    </ChildContent>
+</InteractiveLoader>

@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/docs/">
+    <File Path="docs/advanced-topics.md" />
+    <File Path="docs/spec.md" />
+    <File Path="docs/development-guide.md" />
+    <File Path="docs/security-notes.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/MentorApp.Application/MentorApp.Application.csproj" />
+    <Project Path="src/MentorApp.Domain/MentorApp.Domain.csproj" />
+    <Project Path="src/MentorApp.Infrastructure/MentorApp.Infrastructure.csproj" />
+    <Project Path="src/MentorApp.Web/MentorApp.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MentorApp.Tests/MentorApp.Tests.csproj" />
+  </Folder>
+  <Folder Name="/ソリューション項目/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
+</Solution>

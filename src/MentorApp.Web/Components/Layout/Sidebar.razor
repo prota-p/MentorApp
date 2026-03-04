@@ -1,0 +1,56 @@
+﻿@using MentorApp.Application.Contracts.Authentication
+@using MentorApp.Infrastructure.Authentication
+@inject NavigationManager Navigation
+
+@* 内側のAuthorizeViewとコンテキスト変数名の衝突を回避するため、Contextを明示的に指定 *@
+<AuthorizeView Roles="@AllRoles" Context="outerContext">
+    <Authorized>
+        <nav class="col-12 col-md-2 bg-light sidebar border-end">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>メニュー</span>
+                </h6>
+                <ul class="nav sidebar-nav">
+                    <AuthorizeView Roles="@AdminRole" >
+                        <Authorized>
+                            <li class="nav-item">
+                                <a class="nav-link @GetActiveClass(PageRoutes.Users)" href="@PageRoutes.Users">
+                                    👥 User
+                                </a>
+                            </li>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="@AllRoles" >
+                        <Authorized>
+                            <li class="nav-item">
+                                <a class="nav-link @GetActiveClass(PageRoutes.Mentorships)" href="@PageRoutes.Mentorships">
+                                    🔗 Mentorship
+                                </a>
+                            </li>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="@AllRoles" >
+                        <Authorized>
+                            <li class="nav-item">
+                                <a class="nav-link @GetActiveClass(PageRoutes.Topics)" href="@PageRoutes.Topics">
+                                    💬 Topic
+                                </a>
+                            </li>
+                        </Authorized>
+                    </AuthorizeView>
+                </ul>
+            </div>
+        </nav>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private const string AdminRole = nameof(Role.Admin);
+    private const string AllRoles = $"{nameof(Role.Admin)},{nameof(Role.Mentor)},{nameof(Role.Mentee)}";
+
+    private string GetActiveClass(string route)
+    {
+        var currentPath = new Uri(Navigation.Uri).AbsolutePath;
+        return currentPath.StartsWith(route, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    }
+}

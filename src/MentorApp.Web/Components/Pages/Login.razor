@@ -1,0 +1,66 @@
+﻿@page "/"
+@layout EmptyLayout
+@inject IConfiguration Configuration
+
+<PageTitle>ログイン</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <p>認証済み</p>
+        <RedirectTo Path="@PageRoutes.Home" />
+    </Authorized>
+    <NotAuthorized>
+        <div class="container-md text-center py-5">
+            <h1 class="mb-4">MentorApp へようこそ</h1>
+            <p class="lead mb-4">メンタリング管理アプリケーションです。</p>
+
+            @if (IsMockProvider)
+            {
+                <p class="mb-4">開発環境です。テストユーザーでサインインしてください。</p>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="@GetMockSignInUrl("dummy_extid_admin1", "管理者")" 
+                       class="btn btn-outline-primary btn-lg"
+                       data-enhance-nav="false">
+                        🛡️ 管理者でサインイン
+                    </a>
+                    <a href="@GetMockSignInUrl("dummy_extid_mentor1", "メンター1")" 
+                       class="btn btn-outline-primary btn-lg"
+                       data-enhance-nav="false">
+                        🧑‍🏫 メンター1でサインイン
+                    </a>
+                    <a href="@GetMockSignInUrl("dummy_extid_mentee1", "メンティー1")" 
+                       class="btn btn-outline-primary btn-lg"
+                       data-enhance-nav="false">
+                        🧑‍🎓 メンティー1でサインイン
+                    </a>
+                </div>
+            }
+            else
+            {
+                <p class="mb-4">@CurrentProvider でサインイン</p>
+                <a href="@AuthRoutes.SignIn" 
+                   class="btn btn-primary btn-lg"
+                   data-enhance-nav="false">
+                    🔑 サインイン
+                </a>
+            }
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private string CurrentProvider => Configuration["Authentication:Provider"]!;
+
+    private bool IsMockProvider => CurrentProvider.Equals("Mock", StringComparison.OrdinalIgnoreCase);
+
+    private string GetMockSignInUrl(string externalId, string displayName)
+    {
+        var query = $"?externalId={Uri.EscapeDataString(externalId)}&displayName={Uri.EscapeDataString(displayName)}";
+        return string.IsNullOrWhiteSpace(ReturnUrl)
+            ? $"{AuthRoutes.SignIn}{query}"
+            : $"{AuthRoutes.SignIn}{query}&ReturnUrl={Uri.EscapeDataString(ReturnUrl)}";
+    }
+}

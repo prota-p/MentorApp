@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 440" font-family="sans-serif">
+  <style>
+    .frame { fill: none; stroke: #aaa; stroke-width: 1; }
+    .bg-header { fill: #eee; stroke: #aaa; stroke-width: 1; }
+    .bg-sidebar { fill: #f5f5f5; stroke: none; }
+    .bg-white { fill: #fff; stroke: #ccc; stroke-width: 1; }
+    .divider { stroke: #ddd; stroke-width: 1; }
+    .t-xs { font-size: 9px; fill: #999; }
+    .t-s { font-size: 10px; fill: #666; }
+    .t-m-bold { font-size: 11px; fill: #333; font-weight: bold; }
+    .t-l { font-size: 14px; fill: #333; font-weight: bold; }
+    .t-menu { font-size: 11px; fill: #555; }
+    .t-menu-active { font-size: 11px; fill: #333; font-weight: bold; }
+    .badge { fill: #ccc; rx: 3; ry: 3; }
+    .badge-text { font-size: 9px; fill: #555; dominant-baseline: central; }
+    .menu-active-bg { fill: #e0e0e0; rx: 4; ry: 4; }
+    .dropdown { fill: #fff; stroke: #bbb; stroke-width: 1; }
+    .note { font-size: 9px; fill: #aaa; font-style: italic; }
+    .area-label { font-size: 8px; fill: #bbb; letter-spacing: 0.5px; }
+  </style>
+
+  <!-- Outer border -->
+  <rect x="0.5" y="0.5" width="779" height="439" class="frame" rx="2"/>
+
+  <!-- Background for main content area (behind everything) -->
+  <rect x="141" y="39" width="638" height="399.5" fill="#fff"/>
+
+  <!-- ==================== HEADER ==================== -->
+  <rect x="0.5" y="0.5" width="779" height="38" class="bg-header" rx="2"/>
+  <text x="6" y="12" class="area-label">ヘッダー</text>
+  <text x="16" y="25" class="t-m-bold">MentorApp</text>
+
+  <!-- User dropdown -->
+  <rect x="610" y="7" width="140" height="24" class="bg-white" rx="3"/>
+  <text x="624" y="24" class="t-s">ユーザー名 (Role) ▼</text>
+
+  <!-- Dropdown expanded hint -->
+  <rect x="610" y="33" width="140" height="50" class="dropdown" rx="2"/>
+  <text x="624" y="52" class="t-s">プロフィール</text>
+  <line x1="618" y1="60" x2="740" y2="60" class="divider"/>
+  <text x="624" y="76" class="t-s">ログアウト</text>
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <rect x="0.5" y="39" width="140" height="400" class="bg-sidebar"/>
+  <line x1="140.5" y1="39" x2="140.5" y2="439" stroke="#ccc" stroke-width="1"/>
+  <text x="6" y="52" class="area-label">サイドバー</text>
+
+  <text x="14" y="72" class="t-s" fill="#999">メニュー</text>
+  <text x="22" y="98" class="t-menu">User</text>
+  <text x="56" y="98" class="t-xs">(Admin のみ)</text>
+  <text x="22" y="126" class="t-menu">Mentorship</text>
+  <rect x="6" y="137" width="128" height="26" class="menu-active-bg"/>
+  <text x="22" y="155" class="t-menu-active">Topic</text>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <text x="148" y="52" class="area-label">メインコンテンツエリア（選択したメニューに応じて一覧・詳細等が表示される）</text>
+
+  <text x="164" y="80" class="t-l">トピック一覧</text>
+  <text x="164" y="94" class="note">※ メイン画面の表示例（メニュー選択により内容は切り替わる）</text>
+
+  <!-- Row 1 -->
+  <line x1="164" y1="106" x2="750" y2="106" class="divider"/>
+  <text x="174" y="128" class="t-m-bold">トピックタイトル</text>
+  <text x="174" y="144" class="t-s">メンター名 → メンティー名　　yyyy/mm/dd hh:mm</text>
+  <rect x="690" y="119" width="50" height="16" class="badge"/>
+  <text x="715" y="127" class="badge-text" text-anchor="middle">ステータス</text>
+  <line x1="164" y1="154" x2="750" y2="154" class="divider"/>
+
+  <!-- Row 2 -->
+  <text x="174" y="176" class="t-m-bold">トピックタイトル</text>
+  <text x="174" y="192" class="t-s">メンター名 → メンティー名　　yyyy/mm/dd hh:mm</text>
+  <rect x="690" y="167" width="50" height="16" class="badge"/>
+  <text x="715" y="175" class="badge-text" text-anchor="middle">ステータス</text>
+  <line x1="164" y1="202" x2="750" y2="202" class="divider"/>
+
+  <!-- Row 3 -->
+  <text x="174" y="224" class="t-m-bold">トピックタイトル</text>
+  <text x="174" y="240" class="t-s">メンター名 → メンティー名　　yyyy/mm/dd hh:mm</text>
+  <rect x="690" y="215" width="50" height="16" class="badge"/>
+  <text x="715" y="223" class="badge-text" text-anchor="middle">ステータス</text>
+  <line x1="164" y1="250" x2="750" y2="250" class="divider"/>
+
+  <!-- Row 4 -->
+  <text x="174" y="272" class="t-m-bold">トピックタイトル</text>
+  <text x="174" y="288" class="t-s">メンター名 → メンティー名　　yyyy/mm/dd hh:mm</text>
+  <rect x="690" y="263" width="50" height="16" class="badge"/>
+  <text x="715" y="271" class="badge-text" text-anchor="middle">ステータス</text>
+  <line x1="164" y1="298" x2="750" y2="298" class="divider"/>
+
+  <!-- Row 5 -->
+  <text x="174" y="320" class="t-m-bold">トピックタイトル</text>
+  <text x="174" y="336" class="t-s">メンター名 → メンティー名　　yyyy/mm/dd hh:mm</text>
+  <rect x="690" y="311" width="50" height="16" class="badge"/>
+  <text x="715" y="319" class="badge-text" text-anchor="middle">ステータス</text>
+  <line x1="164" y1="346" x2="750" y2="346" class="divider"/>
+
+  <!-- "more" indicator -->
+  <text x="440" y="366" class="t-s" text-anchor="middle">⋮</text>
+
+  <!-- Footer count -->
+  <text x="174" y="388" class="t-s">全 N 件のトピック</text>
+
+  <!-- Outer border (re-drawn on top to ensure visibility) -->
+  <rect x="0.5" y="0.5" width="779" height="439" class="frame" rx="2"/>
+</svg>

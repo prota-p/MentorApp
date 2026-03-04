@@ -1,0 +1,104 @@
+﻿@inject MentorshipService MentorshipService
+@inject ICurrentUserService AuthService
+@inject ToastService ToastService
+
+@* メンタリング関係追加フォーム *@
+
+<div class="card">
+    <div class="card-body">
+        <h6 class="card-title">メンタリング関係を追加</h6>
+        <EditForm EditContext="editContext.EditContext" OnSubmit="AddAsync">
+            <div class="row g-2 align-items-start">
+                @if (ShowMentorSelect)
+                {
+                    <div class="col-auto">
+                        <UserSelect @bind-Value="form.MentorUserId"
+                                    Label="メンター"
+                                    Size="FormSize.Small"
+                                    FilterByRole="Role.Mentor" />
+                        <ValidationMessage For="() => form.MentorUserId" />
+                    </div>
+                }
+                @if (ShowMenteeSelect)
+                {
+                    <div class="col-auto">
+                        <UserSelect @bind-Value="form.MenteeUserId"
+                                    Label="メンティー"
+                                    Size="FormSize.Small"
+                                    FilterByRole="Role.Mentee" />
+                        <ValidationMessage For="() => form.MenteeUserId" />
+                    </div>
+                }
+                <div class="col-auto align-self-end">
+                    <button type="submit" class="btn btn-sm btn-primary"
+                            disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <LoadingSpinner Mode="SpinnerMode.Inline" />
+                        }
+                        追加
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" @onclick="OnCancel">
+                        キャンセル
+                    </button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid? FixedMentorId { get; set; }
+    [Parameter] public Guid? FixedMenteeId { get; set; }
+    [Parameter] public EventCallback OnAdded { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private MentorshipForm form = new();
+    private DomainEditContext editContext = null!;
+    private bool isProcessing;
+
+    private bool ShowMentorSelect => !FixedMentorId.HasValue;
+    private bool ShowMenteeSelect => !FixedMenteeId.HasValue;
+
+    protected override void OnInitialized()
+    {
+        form.MentorUserId = FixedMentorId;
+        form.MenteeUserId = FixedMenteeId;
+
+        editContext = new DomainEditContext(form);
+        editContext.SetValidator(() => Mentorship.Validate(form.MentorUserId ?? Guid.Empty, form.MenteeUserId ?? Guid.Empty));
+    }
+
+    private async Task AddAsync()
+    {
+        if (!editContext.Validate()) return;
+
+        var currentUser = await AuthService.GetCurrentUserAsync();
+        if (currentUser is null) return;
+
+        isProcessing = true;
+
+        try
+        {
+            var request = new CreateMentorshipRequest(form.MentorUserId!.Value, form.MenteeUserId!.Value);
+            await MentorshipService.CreateMentorshipAsync(request, currentUser);
+            ToastService.ShowSuccess("メンタリング関係を追加しました。");
+
+            await OnAdded.InvokeAsync();
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("追加に失敗しました");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private class MentorshipForm
+    {
+        public Guid? MentorUserId { get; set; }
+        public Guid? MenteeUserId { get; set; }
+    }
+}

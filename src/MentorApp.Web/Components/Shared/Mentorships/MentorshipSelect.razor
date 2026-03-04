@@ -1,0 +1,76 @@
+﻿@inherits InputBase<Guid?>
+@inject IMentorshipQueryService MentorshipQuery
+@inject ICurrentUserService AuthService
+@inject ToastService ToastService
+
+@if (!string.IsNullOrEmpty(Label))
+{
+    <label class="form-label">@Label</label>
+}
+<select class="form-select @SizeClass"
+        @bind="CurrentValueAsString"
+        disabled="@(isLoading || Disabled)">
+    <option value="">@Placeholder</option>
+    @foreach (var ms in mentorships)
+    {
+        <option value="@ms.Id">@ms.MentorDisplayName → @ms.MenteeDisplayName</option>
+    }
+</select>
+
+@code {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "-- 選択 --";
+    [Parameter] public FormSize Size { get; set; } = FormSize.Normal;
+    [Parameter] public bool Disabled { get; set; }
+
+    private IReadOnlyList<MentorshipDto> mentorships = [];
+    private bool isLoading = true;
+
+    private string SizeClass => Size == FormSize.Small ? "form-select-sm" : "";
+
+    protected override bool TryParseValueFromString(string? value, out Guid? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        validationErrorMessage = null;
+
+        if (string.IsNullOrEmpty(value))
+        {
+            result = null;
+            return true;
+        }
+
+        if (Guid.TryParse(value, out var guid))
+        {
+            result = guid;
+            return true;
+        }
+
+        result = null;
+        validationErrorMessage = $"'{value}' は有効な選択肢ではありません。";
+        return false;
+    }
+
+    protected override Task OnInitializedAsync() => LoadMentorshipsAsync();
+
+    private async Task LoadMentorshipsAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            var currentUser = await AuthService.GetCurrentUserAsync();
+            if (currentUser is null) return;
+
+            var all = await MentorshipQuery.GetAccessibleAsync(currentUser);
+            mentorships = all.Where(m => m.Status == MentorshipStatus.Active).ToList();
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("メンタリング一覧の読み込みに失敗しました");
+            mentorships = [];
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

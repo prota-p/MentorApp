@@ -1,0 +1,28 @@
+﻿/*
+    RoleBadge - ロール別バッジのスタイル定義
+    Bootstrapのbadgeクラスを使用し、ドメイン固有の色のみ定義
+*/
+
+/* 管理者: 赤系（権限の高さを示す） */
+.role-admin {
+    color: #fff;
+    background-color: #dc3545;
+}
+
+/* メンター: 青系（指導・サポートを示す） */
+.role-mentor {
+    color: #fff;
+    background-color: #0dcaf0;
+}
+
+/* メンティー: 黄系（学習・成長を示す） */
+.role-mentee {
+    color: #212529;
+    background-color: #ffc107;
+}
+
+/* デフォルト: グレー */
+.role-default {
+    color: #fff;
+    background-color: #6c757d;
+}

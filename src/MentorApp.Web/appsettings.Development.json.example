@@ -1,0 +1,33 @@
+﻿{
+    "Persistence": {
+        "EnableSensitiveDataLogging": true,
+        "EnableDetailedErrors": true
+    },
+    "Authentication": {
+        "Provider": "Mock",
+        "InitialAdmin": {
+            "ExternalId": "YOUR_ENTRA_OBJECT_ID",
+            "DisplayName": "管理者",
+            "Email": "admin@yourdomain.com"
+        },
+        "Providers": {
+            "EntraId": {
+                "TenantId": "YOUR_TENANT_ID",
+                "ClientId": "YOUR_CLIENT_ID",
+                "ClientSecret": "YOUR_CLIENT_SECRET"
+            },
+            "Google": {
+                "ClientId": "YOUR_GOOGLE_CLIENT_ID",
+                "ClientSecret": "YOUR_GOOGLE_CLIENT_SECRET"
+            }
+        }
+    },
+    "Serilog": {
+        "MinimumLevel": {
+            "Default": "Debug",
+            "Override": {
+                "Microsoft.EntityFrameworkCore.Database.Command": "Information"
+            }
+        }
+    }
+}

@@ -1,0 +1,19 @@
+﻿@* ロールを示すバッジ - Bootstrapのbadgeクラスを使用し、ドメイン固有の色はScoped CSSで定義 *@
+<span class="badge role-@RoleClass">
+    @DisplayName
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public Role Role { get; set; }
+
+    private string RoleClass => Role.ToString().ToLower();
+
+    private string DisplayName => Role switch
+    {
+        Role.Admin => "管理者",
+        Role.Mentor => "メンター",
+        Role.Mentee => "メンティー",
+        _ => Role.ToString()
+    };
+}

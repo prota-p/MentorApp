@@ -1,0 +1,180 @@
+﻿@page "/mentorships/{Id:guid}"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject IMentorshipQueryService MentorshipQuery
+@inject MentorshipService MentorshipService
+@inject ICurrentUserService AuthService
+@inject NavigationManager Navigation
+@inject ToastService ToastService
+
+<PageTitle>メンタリング詳細</PageTitle>
+
+<InteractiveLoader>
+    <div class="container-fluid mt-3">
+        <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@PageRoutes.Mentorships">メンタリング一覧</a></li>
+            <li class="breadcrumb-item active" aria-current="page">詳細</li>
+        </ol>
+    </nav>
+
+    @if (isLoading)
+    {
+        <LoadingSpinner />
+    }
+    else if (mentorship is null)
+    {
+        <div class="alert alert-warning" role="alert">
+            ⚠️ メンタリング関係が見つかりません。
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">メンタリング詳細</h5>
+                <MentorshipStatusBadge Status="mentorship.Status" />
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">メンター</dt>
+                    <dd class="col-sm-9">@mentorship.MentorDisplayName</dd>
+
+                    <dt class="col-sm-3">メンティー</dt>
+                    <dd class="col-sm-9">@mentorship.MenteeDisplayName</dd>
+
+                    <dt class="col-sm-3">開始日</dt>
+                    <dd class="col-sm-9">@mentorship.StartedAt.FormatDate()</dd>
+
+                    @if (mentorship.EndedAt.HasValue)
+                    {
+                        <dt class="col-sm-3">終了日</dt>
+                        <dd class="col-sm-9">@mentorship.EndedAt.Value.FormatDate()</dd>
+                    }
+                </dl>
+            </div>
+            @if (CanComplete || CanCancel || CanDelete)
+            {
+                <div class="card-footer">
+                    @if (mentorship.Status == MentorshipStatus.Active)
+                    {
+                        @if (CanComplete)
+                        {
+                            <button class="btn btn-success me-2"
+                                    @onclick="() => ChangeStatusAsync(complete: true)"
+                                    disabled="@isProcessing">
+                                ✅ 完了
+                            </button>
+                        }
+                        @if (CanCancel)
+                        {
+                            <button class="btn btn-warning me-2"
+                                    @onclick="() => ChangeStatusAsync(complete: false)"
+                                    disabled="@isProcessing">
+                                ❌ 中止
+                            </button>
+                        }
+                    }
+                    @if (CanDelete)
+                    {
+                        <button class="btn btn-outline-danger"
+                                @onclick="DeleteAsync"
+                                disabled="@isProcessing">
+                            🗑️ 削除
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Topic一覧セクション -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">トピック一覧</h5>
+            </div>
+            <div class="card-body p-0">
+                <TopicList FilterByMentorshipId="@Id" AllowAdd="true" />
+            </div>
+        </div>
+    }
+    </div>
+</InteractiveLoader>
+
+@code {
+[Parameter] public Guid Id { get; set; }
+
+private MentorshipDto? mentorship;
+    private CurrentUser? currentUser;
+    private bool isLoading = true;
+    private bool isProcessing;
+
+    private bool IsAdmin => currentUser?.Role == Role.Admin;
+    private bool IsMentor => currentUser?.Role == Role.Mentor && mentorship?.MentorUserId == currentUser?.UserId;
+    private bool CanComplete => IsAdmin || IsMentor;
+    private bool CanCancel => IsAdmin;
+    private bool CanDelete => IsAdmin;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await AuthService.GetCurrentUserAsync();
+
+        if (currentUser is null) { isLoading = false; return; }
+
+        mentorship = await MentorshipQuery.GetByIdAsync(Id, currentUser);
+        isLoading = false;
+    }
+
+    private async Task ChangeStatusAsync(bool complete)
+    {
+        if (currentUser is null) return;
+
+        isProcessing = true;
+
+        try
+        {
+            if (complete)
+            {
+                await MentorshipService.CompleteMentorshipAsync(Id, currentUser);
+                ToastService.ShowSuccess("メンタリングを完了しました。");
+            }
+            else
+            {
+                await MentorshipService.CancelMentorshipAsync(Id, currentUser);
+                ToastService.ShowSuccess("メンタリングを中止しました。");
+            }
+            // 更新後、DTOを再取得
+            mentorship = await MentorshipQuery.GetByIdAsync(Id, currentUser);
+        }
+        catch (Exception)
+        {
+            var action = complete ? "完了" : "中止";
+            ToastService.ShowError($"{action}処理に失敗しました");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (currentUser is null) return;
+
+        isProcessing = true;
+
+        try
+        {
+            await MentorshipService.DeleteMentorshipAsync(Id, currentUser);
+            ToastService.ShowSuccess("メンタリング関係を削除しました。");
+            Navigation.NavigateTo(PageRoutes.Mentorships);
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("削除処理に失敗しました");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}

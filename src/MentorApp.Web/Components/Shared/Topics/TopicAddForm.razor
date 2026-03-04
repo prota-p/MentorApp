@@ -1,0 +1,94 @@
+﻿@inject TopicService TopicService
+@inject ICurrentUserService AuthService
+@inject ToastService ToastService
+
+@* トピック作成フォーム *@
+
+<div class="card">
+    <div class="card-body">
+        <h6 class="card-title">トピックを作成</h6>
+        <EditForm EditContext="editContext.EditContext" OnSubmit="CreateAsync">
+            @if (ShowMentorshipSelect)
+            {
+                <div class="mb-3">
+                    <MentorshipSelect @bind-Value="form.MentorshipId"
+                                      Label="メンタリング"
+                                      Size="FormSize.Small" />
+                    <ValidationMessage For="() => form.MentorshipId" />
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label">タイトル</label>
+                <InputText @bind-Value="form.Title" class="form-control form-control-sm" placeholder="トピックのタイトルを入力..." />
+                <ValidationMessage For="() => form.Title" />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary" disabled="@isCreating">
+                    @if (isCreating)
+                    {
+                        <LoadingSpinner Mode="SpinnerMode.Inline" />
+                    }
+                    <span>作成</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" @onclick="OnCancel">
+                    キャンセル
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid? FixedMentorshipId { get; set; }
+    [Parameter] public EventCallback OnCreated { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private TopicForm form = new();
+    private DomainEditContext editContext = null!;
+    private bool isCreating;
+
+    private bool ShowMentorshipSelect => !FixedMentorshipId.HasValue;
+
+    protected override void OnInitialized()
+    {
+        form.MentorshipId = FixedMentorshipId;
+
+        editContext = new DomainEditContext(form);
+        editContext.SetValidator(() => Topic.Validate(form.MentorshipId ?? Guid.Empty, form.Title));
+    }
+
+    private async Task CreateAsync()
+    {
+        if (!editContext.Validate()) return;
+
+        var currentUser = await AuthService.GetCurrentUserAsync();
+        if (currentUser is null) return;
+
+        isCreating = true;
+
+        try
+        {
+            var request = new CreateTopicRequest(form.MentorshipId!.Value, form.Title!);
+            await TopicService.CreateTopicAsync(request, currentUser);
+            ToastService.ShowSuccess("トピックを作成しました。");
+
+            await OnCreated.InvokeAsync();
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("トピックの作成に失敗しました");
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+
+    private class TopicForm
+    {
+        public Guid? MentorshipId { get; set; }
+        public string? Title { get; set; }
+    }
+}

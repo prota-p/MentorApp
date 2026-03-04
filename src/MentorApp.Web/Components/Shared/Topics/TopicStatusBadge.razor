@@ -1,0 +1,18 @@
+﻿@* トピックステータスを示すバッジ - Bootstrapのbadgeクラスを使用し、ドメイン固有の色はScoped CSSで定義 *@
+<span class="badge status-@StatusClass">
+    @DisplayName
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public TopicStatus Status { get; set; }
+
+    private string StatusClass => Status.ToString().ToLower();
+
+    private string DisplayName => Status switch
+    {
+        TopicStatus.Open => "オープン",
+        TopicStatus.Closed => "クローズ",
+        _ => Status.ToString()
+    };
+}

@@ -1,0 +1,40 @@
+﻿@inject ICurrentUserService AuthService
+
+<AuthorizeView>
+    <Authorized>
+        <div class="dropdown">
+            <button class="btn btn-link dropdown-toggle text-decoration-none text-dark" 
+                    type="button" 
+                    id="userMenuDropdown" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false">
+                @currentUser?.DisplayName (@currentUser?.Role)
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuDropdown">
+                <li>
+                    <a class="dropdown-item" href="@PageRoutes.Profile">
+                        👤 プロフィール
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form method="post" action="@AuthRoutes.SignOut">
+                        <AntiforgeryToken />
+                        <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start px-3">
+                            🚪 ログアウト
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private CurrentUser? currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await AuthService.GetCurrentUserAsync();
+    }
+}

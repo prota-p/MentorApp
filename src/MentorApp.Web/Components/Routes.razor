@@ -1,0 +1,26 @@
+﻿@using MentorApp.Application.Contracts.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    @if (context.User?.Identity?.IsAuthenticated != true)
+                    {
+                        <RedirectTo Path="@PageRoutes.Login" />
+                    }
+                    else
+                    {
+                        <RedirectTo Path="@PageRoutes.AccessDenied" />
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <RedirectTo Path="@PageRoutes.NotFound" />
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

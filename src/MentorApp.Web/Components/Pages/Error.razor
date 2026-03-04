@@ -1,0 +1,32 @@
+﻿@page "/error"
+@layout EmptyLayout
+@using System.Diagnostics
+@using MentorApp.Application.Contracts.Authentication
+
+<PageTitle>エラー</PageTitle>
+
+<div class="container-md text-center py-5">
+    <h1 class="text-danger">エラーが発生しました</h1>
+    <p class="text-muted">申し訳ございません。リクエストの処理中に問題が発生しました。</p>
+
+    @if (ShowRequestId)
+    {
+        <p class="mt-3">
+            <strong>リクエストID:</strong> <code>@RequestId</code>
+        </p>
+    }
+    
+    <a href="@PageRoutes.Login" class="btn btn-primary mt-3">ログインページに戻る</a>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

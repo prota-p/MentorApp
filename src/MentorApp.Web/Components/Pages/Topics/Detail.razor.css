@@ -1,0 +1,18 @@
+﻿/*
+    Detail - チャット風メッセージ吹き出しのスタイル定義
+    Bootstrapのユーティリティクラスと併用し、吹き出し固有の装飾のみ定義
+*/
+
+.message-content {
+    word-break: break-word;
+}
+
+/* 送信メッセージ: 右下角のみ角張らせて吹き出し風に */
+.message-content-sent {
+    border-radius: 1rem 1rem 0.25rem 1rem;
+}
+
+/* 受信メッセージ: 左下角のみ角張らせて吹き出し風に */
+.message-content-received {
+    border-radius: 1rem 1rem 1rem 0.25rem;
+}

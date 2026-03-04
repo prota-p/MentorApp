@@ -1,0 +1,45 @@
+﻿@* クイックアクションパネル - ロール別のショートカットリンクを表示 *@
+@inject ICurrentUserService AuthService
+
+@if (currentUser is not null)
+{
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">🚀 クイックアクション</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-grid gap-2 d-md-flex">
+                @foreach (var action in GetActions())
+                {
+                    <a href="@action.Url" class="btn btn-outline-primary">@action.Label</a>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private CurrentUser? currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await AuthService.GetCurrentUserAsync();
+    }
+
+    private IEnumerable<ActionItem> GetActions()
+    {
+        if (currentUser is null) yield break;
+
+        if (currentUser.Role == Role.Admin)
+        {
+            yield return new("ユーザー管理", PageRoutes.Users);
+            yield return new("メンタリング管理", PageRoutes.Mentorships);
+        }
+        else
+        {
+            yield return new("トピック一覧", PageRoutes.Topics);
+        }
+    }
+
+    private record ActionItem(string Label, string Url);
+}

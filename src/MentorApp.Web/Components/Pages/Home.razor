@@ -1,0 +1,43 @@
+﻿@page "/home"
+@rendermode InteractiveServer
+@inject ICurrentUserService AuthService
+@attribute [Authorize]
+
+<PageTitle>ホーム</PageTitle>
+
+<InteractiveLoader>
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <h1>MentorApp へようこそ</h1>
+
+                @if (currentUser == null)
+                {
+                    <LoadingSpinner />
+                }
+                else
+                {
+                    <div class="alert alert-success" role="alert">
+                        <p>こんにちは、<strong>@currentUser.DisplayName</strong> さん</p>
+                        <hr>
+                        <p class="mb-0">
+                            <strong>ロール:</strong> <RoleBadge Role="@currentUser.Role" />
+                        </p>
+                    </div>
+
+                    <DashboardStatsPanel />
+                    <QuickActionsPanel />
+                }
+            </div>
+        </div>
+    </div>
+</InteractiveLoader>
+
+@code {
+    private CurrentUser? currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await AuthService.GetCurrentUserAsync();
+    }
+}

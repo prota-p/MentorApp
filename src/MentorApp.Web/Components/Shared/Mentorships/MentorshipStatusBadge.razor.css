@@ -1,0 +1,22 @@
+﻿/*
+    MentorshipStatusBadge - ステータス別バッジのスタイル定義
+    Bootstrapのbadgeクラスを使用し、ドメイン固有の色のみ定義
+*/
+
+/* 進行中: 緑系（アクティブな関係を示す） */
+.status-active {
+    color: #fff;
+    background-color: #198754;
+}
+
+/* 完了: グレー系（終了した関係を示す） */
+.status-completed {
+    color: #fff;
+    background-color: #6c757d;
+}
+
+/* キャンセル: 赤系（中止された関係を示す） */
+.status-cancelled {
+    color: #fff;
+    background-color: #dc3545;
+}

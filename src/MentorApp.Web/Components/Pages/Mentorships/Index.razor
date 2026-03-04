@@ -1,0 +1,19 @@
+﻿@page "/mentorships"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+<PageTitle>メンタリング一覧</PageTitle>
+
+<InteractiveLoader>
+    <div class="container-fluid mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>メンタリング一覧</h1>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <MentorshipList />
+            </div>
+        </div>
+    </div>
+</InteractiveLoader>

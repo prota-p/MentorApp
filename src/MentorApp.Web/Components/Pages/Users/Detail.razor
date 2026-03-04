@@ -1,0 +1,26 @@
+﻿@page "/users/{UserId:guid}"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = nameof(Role.Admin))]
+
+<PageTitle>ユーザー詳細</PageTitle>
+
+<InteractiveLoader>
+    <div class="container-fluid mt-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="@PageRoutes.Users">ユーザー一覧</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">ユーザー詳細</li>
+            </ol>
+        </nav>
+
+        <UserDetailForm UserId="@UserId"
+                        Mode="UserDetailFormMode.AdminDetail" />
+    </div>
+</InteractiveLoader>
+
+@code {
+    [Parameter]
+    public Guid UserId { get; set; }
+}

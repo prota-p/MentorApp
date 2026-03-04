@@ -1,0 +1,19 @@
+﻿@* メンタリングステータスを示すバッジ - Bootstrapのbadgeクラスを使用し、ドメイン固有の色はScoped CSSで定義 *@
+<span class="badge status-@StatusClass">
+    @DisplayName
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public MentorshipStatus Status { get; set; }
+
+    private string StatusClass => Status.ToString().ToLower();
+
+    private string DisplayName => Status switch
+    {
+        MentorshipStatus.Active => "進行中",
+        MentorshipStatus.Completed => "完了",
+        MentorshipStatus.Cancelled => "キャンセル",
+        _ => Status.ToString()
+    };
+}

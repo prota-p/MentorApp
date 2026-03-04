@@ -1,0 +1,81 @@
+﻿@* ダッシュボード統計パネル - ロール別に適切な統計を表示 *@
+@inject ICurrentUserService AuthService
+@inject IDashboardStatsQueryService StatsQuery
+
+@if (adminStats is not null || userStats is not null)
+{
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">📊 @GetTitle()</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                @foreach (var item in GetStatItems())
+                {
+                    <StatCard Value="@item.Value"
+                              Label="@item.Label"
+                              ColSize="@item.ColSize" />
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private CurrentUser? currentUser;
+    private AdminStatsDto? adminStats;
+    private UserStatsDto? userStats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await AuthService.GetCurrentUserAsync();
+
+        if (currentUser is null) return;
+
+        if (currentUser.Role == Role.Admin)
+        {
+            adminStats = await StatsQuery.GetAdminStatsAsync(currentUser);
+        }
+        else
+        {
+            userStats = await StatsQuery.GetUserStatsAsync(currentUser);
+        }
+    }
+
+    private string GetTitle() => currentUser?.Role switch
+    {
+        Role.Admin => "システム統計",
+        Role.Mentor => "メンター統計",
+        Role.Mentee => "メンティー統計",
+        _ => "統計"
+    };
+
+    private IEnumerable<StatItem> GetStatItems()
+    {
+        if (currentUser is null) yield break;
+
+        // Admin 専用の統計
+        if (adminStats is not null)
+        {
+            yield return new("総ユーザー数", adminStats.TotalUsers, 4);
+            yield return new("アクティブなメンタリング", adminStats.ActiveMentorships, 4);
+            yield return new("総トピック数", adminStats.TotalTopics, 4);
+            yield return new("総メンタリング数", adminStats.TotalMentorships, 6);
+            yield return new("オープンなトピック", adminStats.OpenTopics, 6);
+            yield break;
+        }
+
+        // Mentor / Mentee 共通の統計（ラベルだけ変える）
+        if (userStats is not null)
+        {
+            var mentorshipLabel = currentUser.Role == Role.Mentor ? "担当メンティー数" : "メンター数";
+
+            yield return new(mentorshipLabel, userStats.TotalMentorships, 4);
+            yield return new("アクティブなメンタリング", userStats.ActiveMentorships, 4);
+            yield return new("総トピック数", userStats.TotalTopics, 4);
+            yield return new("オープンなトピック", userStats.OpenTopics, 12);
+        }
+    }
+
+    private record StatItem(string Label, int Value, int ColSize);
+}

@@ -1,0 +1,50 @@
+﻿@using MentorApp.Domain.Models.Shared
+
+@* ユーザー詳細画面のメンターシップ一覧セクション *@
+
+@if (UserRole is Role.Mentor)
+{
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <h2 class="h5 mb-0">
+                👥 メンティー一覧
+                <small class="text-muted">（メンターとして）</small>
+            </h2>
+        </div>
+        <div class="card-body p-0">
+            <MentorshipList
+                FilterByUserId="@UserId"
+                FixedMentorId="@UserId"
+                AllowEdit="@AllowEdit" />
+        </div>
+    </div>
+}
+
+@if (UserRole is Role.Mentee)
+{
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <h2 class="h5 mb-0">
+                🧑‍🏫 メンター一覧
+                <small class="text-muted">（メンティーとして）</small>
+            </h2>
+        </div>
+        <div class="card-body p-0">
+            <MentorshipList
+                FilterByUserId="@UserId"
+                FixedMenteeId="@UserId"
+                AllowEdit="@AllowEdit" />
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid UserId { get; set; }
+
+    [Parameter, EditorRequired]
+    public Role UserRole { get; set; }
+
+    [Parameter]
+    public bool AllowEdit { get; set; }
+}

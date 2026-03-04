@@ -1,0 +1,57 @@
+﻿@*
+    InteractiveLoader - SSR → Interactive 切り替え時のちらつき防止コンポーネント
+
+    【問題】
+    Blazor の InteractiveServer モードでは、プレレンダリング（SSR）後に
+    SignalR 接続が確立され、コンポーネントが再インスタンス化されます。
+    この切り替え時に UI がちらつくことがあります。
+
+    【解決方法】
+    OnAfterRender は SSR 時には呼ばれず、Interactive モードでのみ呼ばれます。
+    この特性を利用して、接続確立を検出し、それまではローディング表示を維持します。
+
+    【効果】
+    - SSR 時: IsConnected=false → Loading 表示
+    - Interactive 時: OnAfterRender(firstRender=true) → IsConnected=true → ChildContent 表示
+    - ChildContent 内の OnInitializedAsync は Interactive モードで1回だけ実行されます
+
+    【使用例】
+    <InteractiveLoader>
+        <ChildContent>
+            @if (isLoading)
+            {
+                <LoadingSpinner />
+            }
+            else
+            {
+                // メインコンテンツ
+            }
+        </ChildContent>
+    </InteractiveLoader>
+*@
+
+@if (IsConnected)
+{
+    @ChildContent
+}
+else
+{
+    <LoadingSpinner Mode="SpinnerMode.Overlay" />
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool IsConnected { get; set; }
+
+    // SSR 時には呼ばれず、Interactive モードでのみ呼ばれる
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            IsConnected = true;
+            StateHasChanged();
+        }
+    }
+}
