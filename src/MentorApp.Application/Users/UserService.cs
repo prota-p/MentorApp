@@ -48,7 +48,11 @@ public class UserService(
             }
 
             var oldRole = user.Role;
-            await roleChangeValidation.ValidateAsync(user, request.NewRole, uow.Mentorships, cancellationToken);
+            var participatesInActiveMentorship = await uow.Mentorships.HasAnyActiveMentorshipByUserIdAsync(
+                user.Id,
+                cancellationToken);
+
+            roleChangeValidation.Validate(user, request.NewRole, participatesInActiveMentorship);
             user.ChangeRole(request.NewRole);
 
             await uow.SaveChangesAsync(cancellationToken);
@@ -138,7 +142,11 @@ public class UserService(
 
             if (hasRoleChanged)
             {
-                await roleChangeValidation.ValidateAsync(user, request.Role, uow.Mentorships, cancellationToken);
+                var participatesInActiveMentorship = await uow.Mentorships.HasAnyActiveMentorshipByUserIdAsync(
+                    user.Id,
+                    cancellationToken);
+
+                roleChangeValidation.Validate(user, request.Role, participatesInActiveMentorship);
                 user.ChangeRole(request.Role);
             }
 

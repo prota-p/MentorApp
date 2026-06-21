@@ -48,12 +48,16 @@ public class MentorshipService(
             var mentee = await uow.Users.FindByIdAsync(request.MenteeUserId, cancellationToken)
                 ?? throw new ArgumentException($"メンティーユーザーが見つかりません: {request.MenteeUserId}");
 
+            var hasActiveMentorshipForPair = await uow.Mentorships.HasActiveMentorshipAsync(
+                mentor.Id,
+                mentee.Id,
+                cancellationToken);
+
             // ドメインサービスで複数のビジネスルール（Role検証、同一性チェック、重複チェック）を統合的に検証
-            await duplicationCheckService.ValidateMentorshipCreationAsync(
+            duplicationCheckService.ValidateMentorshipCreation(
                 mentor,
                 mentee,
-                uow.Mentorships,
-                cancellationToken);
+                hasActiveMentorshipForPair);
 
             var now = timeProvider.GetUtcNow();
             var mentorship = new Mentorship(request.MentorUserId, request.MenteeUserId, now);

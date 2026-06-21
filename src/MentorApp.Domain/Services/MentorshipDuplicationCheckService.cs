@@ -1,5 +1,4 @@
-﻿using MentorApp.Domain.Models.Mentorships;
-using MentorApp.Domain.Models.Users;
+﻿using MentorApp.Domain.Models.Users;
 
 namespace MentorApp.Domain.Services;
 
@@ -11,14 +10,14 @@ namespace MentorApp.Domain.Services;
 /// 統合的に検証するため、ドメインサービスとして実装。
 /// 単なる「複数集約参照」ではなく、「複数のビジネスルールを組み合わせた評価」を行う点が、
 /// Repository メソッドではなく Domain Service とする理由。
+/// 永続化問い合わせは Application 層で行い、このサービスは取得済みの判定材料を使って最終判断を行う。
 /// </remarks>
 public class MentorshipDuplicationCheckService
 {
-    public async Task ValidateMentorshipCreationAsync(
+    public void ValidateMentorshipCreation(
         User mentor,
         User mentee,
-        IMentorshipRepository mentorshipRepository,
-        CancellationToken cancellationToken = default)
+        bool hasActiveMentorshipForPair)
     {
         if (mentor.Role != Role.Mentor)
         {
@@ -38,12 +37,7 @@ public class MentorshipDuplicationCheckService
                 "Mentor と Mentee は異なるユーザーである必要があります");
         }
 
-        var hasActiveMentorship = await mentorshipRepository.HasActiveMentorshipAsync(
-            mentor.Id,
-            mentee.Id,
-            cancellationToken);
-
-        if (hasActiveMentorship)
+        if (hasActiveMentorshipForPair)
         {
             throw new InvalidOperationException(
                 "この Mentor と Mentee の組み合わせで、既にアクティブな Mentorship が存在します");
