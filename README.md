@@ -156,6 +156,7 @@ Server=(localdb)\MSSQLLocalDB;Database=MentorApp;...
 #### SQLite
 
 軽量で設定不要。ファイルベースのデータベースとして動作します。
+SQLite 関連の NuGet 脆弱性警告は EF Core SQLite からの推移的依存によるもので、本アプリでは SQL Server を主な利用対象としています。
 
 ```json
 "Persistence": {
