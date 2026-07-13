@@ -69,9 +69,6 @@ internal class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(
             entity.HasOne(e => e.MenteeUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
-
-            entity.Property(e => e.Status)
-                .HasConversion<int>();
         });
     }
 
@@ -89,9 +86,6 @@ internal class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(
             entity.HasOne(e => e.Mentorship)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
-
-            entity.Property(e => e.Status)
-                .HasConversion<int>();
 
             // Topic削除時に同一集約であるMessagesも連鎖削除する
             entity.HasMany(e => e.Messages)
