@@ -38,7 +38,8 @@ internal class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(
             entity.Property(e => e.ExternalId)
                 .HasMaxLength(User.ExternalIdMaxLength);
 
-            // ExternalIdはIdP切り替え時も一意であるべき
+            // ExternalIdはIdPが発行するユーザー識別子。
+            // 同一ユーザーの二重登録を防ぐため、DB側でも一意性を保証する
             entity.HasIndex(e => e.ExternalId)
                 .IsUnique();
 
