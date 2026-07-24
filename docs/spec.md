@@ -228,6 +228,7 @@ erDiagram
     User ||--o{ Mentorship : "Mentee として"
     Mentorship ||--o{ Topic : "持つ"
     Topic ||--o{ Message : "持つ"
+    User ||--o{ Message : "送信者として"
 ```
 
 ### User（ユーザー）
