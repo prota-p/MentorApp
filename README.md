@@ -2,7 +2,7 @@
 
 メンターがメンティーを指導するためのチャットアプリケーション。話題ごとにトピックを作成し、テキストベースでやり取りできます。
 
-**Blazor Server 学習シリーズ**の題材アプリとして、モダンな .NET 開発手法を実践的に学ぶことを目的としています。
+**[Blazor Server 学習シリーズ（実務Webアプリ開発編）](https://prota-p.com/web/)**の題材アプリとして、モダンな .NET 開発手法を実践的に学ぶことを目的としています。
 
 ![アプリの画面](./docs/img/screen1.png)
 
@@ -37,7 +37,7 @@
 ### 1. リポジトリのクローン
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/prota-p/MentorApp.git
 cd MentorApp
 ```
 
