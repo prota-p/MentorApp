@@ -55,15 +55,15 @@ public class TopicService(
             await uow.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation(
-                "トピックを作成しました: TopicId={TopicId}, MentorshipId={MentorshipId}, Title={Title}",
-                topic.Id, request.MentorshipId, request.Title);
+                "トピックを作成しました: TopicId={TopicId}, MentorshipId={MentorshipId}, Title={Title}, CurrentUserId={CurrentUserId}",
+                topic.Id, request.MentorshipId, request.Title, currentUser.UserId);
 
             return topic;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "トピックの作成に失敗しました: MentorshipId={MentorshipId}, Title={Title}",
-                request.MentorshipId, request.Title);
+            logger.LogError(ex, "トピックの作成に失敗しました: MentorshipId={MentorshipId}, Title={Title}, CurrentUserId={CurrentUserId}",
+                request.MentorshipId, request.Title, currentUser.UserId);
             throw;
         }
     }
@@ -89,14 +89,14 @@ public class TopicService(
             topic.Close();
             await uow.SaveChangesAsync(cancellationToken);
 
-            logger.LogInformation("トピックをクローズしました: TopicId={TopicId}, Title={Title}",
-                topic.Id, topic.Title);
+            logger.LogInformation("トピックをクローズしました: TopicId={TopicId}, Title={Title}, CurrentUserId={CurrentUserId}",
+                topic.Id, topic.Title, currentUser.UserId);
 
             return topic;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "トピックのクローズに失敗しました: {TopicId}", topicId);
+            logger.LogError(ex, "トピックのクローズに失敗しました: TopicId={TopicId}, CurrentUserId={CurrentUserId}", topicId, currentUser.UserId);
             throw;
         }
     }
@@ -131,15 +131,15 @@ public class TopicService(
             await uow.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation(
-                "メッセージを投稿しました: MessageId={MessageId}, TopicId={TopicId}, SenderUserId={SenderUserId}",
-                message.Id, request.TopicId, request.SenderUserId);
+                "メッセージを投稿しました: MessageId={MessageId}, TopicId={TopicId}, SenderUserId={SenderUserId}, CurrentUserId={CurrentUserId}",
+                message.Id, request.TopicId, request.SenderUserId, currentUser.UserId);
 
             return message;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "メッセージの投稿に失敗しました: TopicId={TopicId}, SenderUserId={SenderUserId}",
-                request.TopicId, request.SenderUserId);
+            logger.LogError(ex, "メッセージの投稿に失敗しました: TopicId={TopicId}, SenderUserId={SenderUserId}, CurrentUserId={CurrentUserId}",
+                request.TopicId, request.SenderUserId, currentUser.UserId);
             throw;
         }
     }

@@ -65,15 +65,15 @@ public class MentorshipService(
             await uow.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation(
-                "メンタリング関係を作成しました: MentorshipId={MentorshipId}, MentorUserId={MentorUserId}, MenteeUserId={MenteeUserId}",
-                mentorship.Id, request.MentorUserId, request.MenteeUserId);
+                "メンタリング関係を作成しました: MentorshipId={MentorshipId}, MentorUserId={MentorUserId}, MenteeUserId={MenteeUserId}, CurrentUserId={CurrentUserId}",
+                mentorship.Id, request.MentorUserId, request.MenteeUserId, currentUser.UserId);
 
             return mentorship;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "メンタリング関係の作成に失敗しました: MentorUserId={MentorUserId}, MenteeUserId={MenteeUserId}",
-                request.MentorUserId, request.MenteeUserId);
+            logger.LogError(ex, "メンタリング関係の作成に失敗しました: MentorUserId={MentorUserId}, MenteeUserId={MenteeUserId}, CurrentUserId={CurrentUserId}",
+                request.MentorUserId, request.MenteeUserId, currentUser.UserId);
             throw;
         }
     }
@@ -99,14 +99,14 @@ public class MentorshipService(
             await uow.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation(
-                "メンタリング関係を完了しました: MentorshipId={MentorshipId}, MentorUserId={MentorUserId}, MenteeUserId={MenteeUserId}",
-                mentorship.Id, mentorship.MentorUserId, mentorship.MenteeUserId);
+                "メンタリング関係を完了しました: MentorshipId={MentorshipId}, MentorUserId={MentorUserId}, MenteeUserId={MenteeUserId}, CurrentUserId={CurrentUserId}",
+                mentorship.Id, mentorship.MentorUserId, mentorship.MenteeUserId, currentUser.UserId);
 
             return mentorship;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "メンタリング関係の完了処理に失敗しました: {MentorshipId}", mentorshipId);
+            logger.LogError(ex, "メンタリング関係の完了処理に失敗しました: MentorshipId={MentorshipId}, CurrentUserId={CurrentUserId}", mentorshipId, currentUser.UserId);
             throw;
         }
     }
@@ -131,14 +131,14 @@ public class MentorshipService(
             await uow.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation(
-                "メンタリング関係をキャンセルしました: MentorshipId={MentorshipId}, MentorUserId={MentorUserId}, MenteeUserId={MenteeUserId}",
-                mentorship.Id, mentorship.MentorUserId, mentorship.MenteeUserId);
+                "メンタリング関係をキャンセルしました: MentorshipId={MentorshipId}, MentorUserId={MentorUserId}, MenteeUserId={MenteeUserId}, CurrentUserId={CurrentUserId}",
+                mentorship.Id, mentorship.MentorUserId, mentorship.MenteeUserId, currentUser.UserId);
 
             return mentorship;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "メンタリング関係のキャンセルに失敗しました: {MentorshipId}", mentorshipId);
+            logger.LogError(ex, "メンタリング関係のキャンセルに失敗しました: MentorshipId={MentorshipId}, CurrentUserId={CurrentUserId}", mentorshipId, currentUser.UserId);
             throw;
         }
     }
@@ -168,12 +168,12 @@ public class MentorshipService(
             await uow.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation(
-                "メンタリング関係を削除しました: MentorshipId={MentorshipId}, MentorUserId={MentorUserId}, MenteeUserId={MenteeUserId}",
-                mentorshipId, mentorship.MentorUserId, mentorship.MenteeUserId);
+                "メンタリング関係を削除しました: MentorshipId={MentorshipId}, MentorUserId={MentorUserId}, MenteeUserId={MenteeUserId}, CurrentUserId={CurrentUserId}",
+                mentorshipId, mentorship.MentorUserId, mentorship.MenteeUserId, currentUser.UserId);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "メンタリング関係の削除に失敗しました: {MentorshipId}", mentorshipId);
+            logger.LogError(ex, "メンタリング関係の削除に失敗しました: MentorshipId={MentorshipId}, CurrentUserId={CurrentUserId}", mentorshipId, currentUser.UserId);
             throw;
         }
     }

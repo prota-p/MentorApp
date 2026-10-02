@@ -43,7 +43,7 @@ public class UserService(
             var user = await uow.Users.FindByIdAsync(request.UserId, cancellationToken);
             if (user is null)
             {
-                logger.LogWarning("ロール変更対象のユーザーが見つかりませんでした: {UserId}", request.UserId);
+                logger.LogWarning("ロール変更対象のユーザーが見つかりませんでした: UserId={UserId}, CurrentUserId={CurrentUserId}", request.UserId, currentUser.UserId);
                 throw new KeyNotFoundException($"ユーザー {request.UserId} が見つかりません");
             }
 
@@ -58,14 +58,14 @@ public class UserService(
             await uow.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation(
-                "ユーザーのロールを変更しました: UserId={UserId}, OldRole={OldRole}, NewRole={NewRole}",
-                user.Id, oldRole, request.NewRole);
+                "ユーザーのロールを変更しました: UserId={UserId}, OldRole={OldRole}, NewRole={NewRole}, CurrentUserId={CurrentUserId}",
+                user.Id, oldRole, request.NewRole, currentUser.UserId);
 
             return user;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "ユーザーのロール変更に失敗しました: {UserId}", request.UserId);
+            logger.LogError(ex, "ユーザーのロール変更に失敗しました: UserId={UserId}, CurrentUserId={CurrentUserId}", request.UserId, currentUser.UserId);
             throw;
         }
     }
@@ -82,7 +82,7 @@ public class UserService(
             var user = await uow.Users.FindByIdAsync(request.UserId, cancellationToken);
             if (user is null)
             {
-                logger.LogWarning("表示名更新対象のユーザーが見つかりませんでした: {UserId}", request.UserId);
+                logger.LogWarning("表示名更新対象のユーザーが見つかりませんでした: UserId={UserId}, CurrentUserId={CurrentUserId}", request.UserId, currentUser.UserId);
                 throw new KeyNotFoundException($"ユーザー {request.UserId} が見つかりません");
             }
 
@@ -92,14 +92,14 @@ public class UserService(
             await uow.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation(
-                "ユーザーの表示名を更新しました: UserId={UserId}, OldDisplayName={OldDisplayName}, NewDisplayName={NewDisplayName}",
-                user.Id, oldDisplayName, request.DisplayName);
+                "ユーザーの表示名を更新しました: UserId={UserId}, OldDisplayName={OldDisplayName}, NewDisplayName={NewDisplayName}, CurrentUserId={CurrentUserId}",
+                user.Id, oldDisplayName, request.DisplayName, currentUser.UserId);
 
             return user;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "表示名の更新に失敗しました: {UserId}", request.UserId);
+            logger.LogError(ex, "表示名の更新に失敗しました: UserId={UserId}, CurrentUserId={CurrentUserId}", request.UserId, currentUser.UserId);
             throw;
         }
     }
@@ -128,7 +128,7 @@ public class UserService(
 
             if (!hasDisplayNameChanged && !hasRoleChanged)
             {
-                logger.LogInformation("ユーザーに変更はありませんでした: {UserId}", request.UserId);
+                logger.LogInformation("ユーザーに変更はありませんでした: UserId={UserId}, CurrentUserId={CurrentUserId}", request.UserId, currentUser.UserId);
                 return null;
             }
 
@@ -155,22 +155,22 @@ public class UserService(
             if (hasDisplayNameChanged)
             {
                 logger.LogInformation(
-                    "ユーザーの表示名を更新しました: UserId={UserId}, OldDisplayName={OldDisplayName}, NewDisplayName={NewDisplayName}",
-                    user.Id, oldDisplayName, request.DisplayName);
+                    "ユーザーの表示名を更新しました: UserId={UserId}, OldDisplayName={OldDisplayName}, NewDisplayName={NewDisplayName}, CurrentUserId={CurrentUserId}",
+                    user.Id, oldDisplayName, request.DisplayName, currentUser.UserId);
             }
 
             if (hasRoleChanged)
             {
                 logger.LogInformation(
-                    "ユーザーのロールを変更しました: UserId={UserId}, OldRole={OldRole}, NewRole={NewRole}",
-                    user.Id, oldRole, request.Role);
+                    "ユーザーのロールを変更しました: UserId={UserId}, OldRole={OldRole}, NewRole={NewRole}, CurrentUserId={CurrentUserId}",
+                    user.Id, oldRole, request.Role, currentUser.UserId);
             }
 
             return user;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "ユーザーの更新に失敗しました: {UserId}", request.UserId);
+            logger.LogError(ex, "ユーザーの更新に失敗しました: UserId={UserId}, CurrentUserId={CurrentUserId}", request.UserId, currentUser.UserId);
             throw;
         }
     }

@@ -181,8 +181,7 @@
   - Application層でログを一元管理
   - EF Core の詳細ログで SQL レベルの診断は可能
 - **QueryService**：失敗時のみ `LogError` で記録し、`throw;` で再スロー
-  - Application層を経由しないため、QueryServiceで直接記録
-  - `CurrentUserId` と引数を添える（EF Core のログには誰の操作かが残らない）
+  - Application層を経由しないため、QueryServiceで直接記録（EF Core のログには誰の操作かが残らない）
 - **認証系**：必要に応じて `Debug` / `Trace` レベルで診断用ログを検討
   - 認証トラブルシュート用（本番では通常無効化されるログレベル）
 
@@ -212,6 +211,7 @@
 **基本方針：**
 - **構造化ログ**：プロパティベースで記録し、検索・分析を容易にする
 - **ログの一元管理**：主にアプリケーション層でログを出力
+- **操作者の記録**：Application層・QueryServiceのログには、操作した利用者の `CurrentUserId` を含める（ログイン時に利用者を特定する認証処理は、まだ `CurrentUser` がないため除く）
 - **ロガー取得**：DI経由で`ILogger<T>`を注入
 
 **シンク構成：**

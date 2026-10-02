@@ -48,8 +48,8 @@ internal sealed class MentorshipQueryService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "メンタリング一覧の取得に失敗しました: CurrentUserId={CurrentUserId}, FilterByUserId={FilterByUserId}",
-                currentUser.UserId, filterByUserId);
+            logger.LogError(ex, "メンタリング一覧の取得に失敗しました: FilterByUserId={FilterByUserId}, CurrentUserId={CurrentUserId}",
+                filterByUserId, currentUser.UserId);
             throw;
         }
     }
