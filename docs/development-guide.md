@@ -85,7 +85,7 @@
 
 **QueryService（Query側）：**
 - 一覧取得、詳細表示などUI表示用途
-- 別集約を含めたJOIN/Includeを許容
+- 別集約を含めたJOINを許容（`Select` の射影内でナビゲーションをたどり、EF CoreにJOINへ変換させる）
 - AsNoTrackingで最適化
 - DTOのみを返す（エンティティは返さない）
 - インターフェースはApplication層（Contracts）に配置
@@ -166,7 +166,7 @@
 
 **Web層（Blazorコンポーネント）：**
 - すべての非同期処理を `try-catch-finally` で囲む
-- ログ記録は行わない（ユーザー向けには `ToastService` で表示、内部詳細はApplication層のログに委ねる）
+- ログ記録は行わない（ユーザー向けには `ToastService` で表示、内部詳細はApplication層・QueryServiceのログに委ねる）
   - ただし **Blazor Server** はサーバーサイドで動作するため、デバッグ目的で `ILogger` を追加しても差し支えない
   - **WASM / Client-side Blazor** の場合はログがブラウザコンソールへの出力になるため、本番環境では注意すること
 - ユーザーフレンドリーなメッセージを `ToastService` で表示
@@ -180,6 +180,9 @@
 - **リポジトリ**：ログ出力しない
   - Application層でログを一元管理
   - EF Core の詳細ログで SQL レベルの診断は可能
+- **QueryService**：失敗時のみ `LogError` で記録し、`throw;` で再スロー
+  - Application層を経由しないため、QueryServiceで直接記録
+  - `CurrentUserId` と引数を添える（EF Core のログには誰の操作かが残らない）
 - **認証系**：必要に応じて `Debug` / `Trace` レベルで診断用ログを検討
   - 認証トラブルシュート用（本番では通常無効化されるログレベル）
 
@@ -202,6 +205,7 @@
 学習用アプリとしてシンプルさを優先しているが、本番環境では以下を検討：
 - エラーコード体系の導入でログとUI表示を紐付け
 - ログ・例外のボイラープレートについては、Mediatorパターン（Mediatorライブラリ等）を使った共通化も可能（学習コストあり）
+- 想定内の失敗（権限なし・業務ルール違反等）は `Warning` で記録し、`Error` をシステム障害に限定
 
 ### 3.3 ロギング構成（Serilog）
 

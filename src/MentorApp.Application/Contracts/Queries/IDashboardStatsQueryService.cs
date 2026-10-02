@@ -25,8 +25,8 @@ public record UserStatsDto(
 /// </remarks>
 public interface IDashboardStatsQueryService
 {
-    /// <summary>システム全体の統計を返す。Admin 専用（非 Admin の場合は空の統計を返す）。</summary>
-    public Task<AdminStatsDto> GetAdminStatsAsync(CurrentUser currentUser, CancellationToken cancellationToken = default);
+    /// <summary>システム全体の統計を返す。Admin 専用で、非 Admin の場合は null を返す。</summary>
+    public Task<AdminStatsDto?> GetAdminStatsAsync(CurrentUser currentUser, CancellationToken cancellationToken = default);
 
     /// <summary>currentUser 自身のメンタリング・トピック統計を返す。</summary>
     public Task<UserStatsDto> GetUserStatsAsync(CurrentUser currentUser, CancellationToken cancellationToken = default);
