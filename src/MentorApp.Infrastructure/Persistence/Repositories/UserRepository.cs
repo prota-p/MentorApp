@@ -21,4 +21,7 @@ internal sealed class UserRepository(AppDbContext dbContext) : IUserRepository
 
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)
         => await dbContext.Users.AddAsync(user, cancellationToken);
+
+    public async Task<bool> HasAnyByRoleAsync(Role role, CancellationToken cancellationToken = default)
+        => await dbContext.Users.AnyAsync(u => u.Role == role, cancellationToken);
 }

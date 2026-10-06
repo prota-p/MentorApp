@@ -19,6 +19,8 @@ internal static class InitialAdminSeeder
     /// <remarks>
     /// appsettings.jsonの設定値に基づき、指定されたExternalIdを持つ
     /// Admin権限のユーザーを作成する。本番環境でも使用する。
+    /// 対象ユーザーが既に存在する場合はロールを変更しない（意図して降格した管理者を、再起動で戻さないため）。
+    /// ただし管理者が1人もいない場合は、画面から回復できないため Admin に昇格する。
     /// </remarks>
     public static async Task SeedAsync(
         IUnitOfWorkFactory uowFactory,
@@ -42,10 +44,28 @@ internal static class InitialAdminSeeder
 
         await using var uow = await uowFactory.CreateAsync();
 
-        var existingAdmin = await uow.Users.FindByExternalIdAsync(externalId);
-        if (existingAdmin != null)
+        var existingUser = await uow.Users.FindByExternalIdAsync(externalId);
+        if (existingUser != null)
         {
-            logger.LogInformation("初期管理者は既に存在します: {DisplayName}", existingAdmin.DisplayName);
+            if (existingUser.Role == Role.Admin)
+            {
+                logger.LogInformation("初期管理者は既にAdminとして存在します: {DisplayName}", existingUser.DisplayName);
+                return;
+            }
+
+            if (await uow.Users.HasAnyByRoleAsync(Role.Admin))
+            {
+                logger.LogInformation("初期管理者のユーザーはAdminではありませんが、ほかにAdminがいるためロールは変更しません: {DisplayName} (Role: {Role})",
+                    existingUser.DisplayName, existingUser.Role);
+                return;
+            }
+
+            var previousRole = existingUser.Role;
+            existingUser.ChangeRole(Role.Admin);
+            await uow.SaveChangesAsync();
+
+            logger.LogWarning("管理者が1人もいないため、初期管理者のユーザーをAdminに昇格しました: {DisplayName} (ExternalId: {ExternalId}, PreviousRole: {PreviousRole})",
+                existingUser.DisplayName, externalId, previousRole);
             return;
         }
 

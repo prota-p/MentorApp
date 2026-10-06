@@ -20,4 +20,7 @@ public interface IUserRepository
     public Task<User?> FindByExternalIdAsync(string externalId, CancellationToken cancellationToken = default);
 
     public Task AddAsync(User user, CancellationToken cancellationToken = default);
+
+    /// <summary>指定したロールのユーザーが1人以上存在するかを返す。初期管理者のシードで、管理者不在の判定に使用。</summary>
+    public Task<bool> HasAnyByRoleAsync(Role role, CancellationToken cancellationToken = default);
 }
