@@ -9,7 +9,7 @@ namespace MentorApp.Infrastructure.Persistence;
 /// </summary>
 /// <remarks>
 /// EnsureCreated / EnsureDeleted などのデータベース操作のみを担当する。
-/// シード処理は <see cref="DataSeeder"/> が担当する。
+/// シード処理は <see cref="InitialAdminSeeder"/> と <see cref="DevelopmentDataSeeder"/> が担当する。
 /// </remarks>
 internal static class DatabaseInitializer
 {

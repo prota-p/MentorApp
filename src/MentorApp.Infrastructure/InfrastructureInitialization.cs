@@ -42,7 +42,7 @@ public static class InfrastructureInitialization
             var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger(typeof(InfrastructureInitialization));
 
-            await DataSeeder.SeedInitialAdminAsync(
+            await InitialAdminSeeder.SeedAsync(
                 uowFactory,
                 timeProvider,
                 authOptions.InitialAdmin.ExternalId!,
@@ -70,7 +70,7 @@ public static class InfrastructureInitialization
         var logger = loggerFactory.CreateLogger(typeof(InfrastructureInitialization));
 
         var baseTime = new DateTimeOffset(2025, 12, 1, 12, 0, 0, TimeSpan.Zero);
-        await DataSeeder.SeedDevelopmentDataAsync(uowFactory, baseTime, logger);
+        await DevelopmentDataSeeder.SeedAsync(uowFactory, baseTime, logger);
     }
 
     /// <summary>
