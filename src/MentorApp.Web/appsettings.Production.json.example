@@ -8,7 +8,7 @@
         "InitialAdmin": {
             "ExternalId": "YOUR_ENTRA_OBJECT_ID",
             "DisplayName": "管理者",
-            "Email": "admin@yourdomain.com"
+            "Email": "admin@example.com"
         },
         "Providers": {
             "EntraId": {
