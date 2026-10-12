@@ -7,7 +7,7 @@
         "Provider": "EntraId",
         "InitialAdmin": {
             "ExternalId": "YOUR_ENTRA_OBJECT_ID",
-            "DisplayName": "管理者",
+            "DisplayName": "初期管理者",
             "Email": "admin@example.com"
         },
         "Providers": {

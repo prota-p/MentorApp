@@ -184,7 +184,7 @@ Server=(localdb)\MSSQLLocalDB;Database=MentorApp;...
 "Authentication": {
   "InitialAdmin": {
     "ExternalId": "（外部 IdP のユーザー ID）",
-    "DisplayName": "管理者",
+    "DisplayName": "初期管理者",
     "Email": "admin@example.com"
   }
 }
