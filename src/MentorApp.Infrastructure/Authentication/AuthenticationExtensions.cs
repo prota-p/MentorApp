@@ -55,9 +55,9 @@ internal static class AuthenticationExtensions
 
         // プロバイダ固有の設定（認証スキーム追加）
         // ※フェーズ2で再利用するためDIにも登録
-        var providerSetup = ProviderFactory.Create(
-            ParseProviderType(configOptions.Provider),
-            configOptions.Providers);
+        var providerType = ParseProviderType(configOptions.Provider);
+        EnsureProviderAllowed(providerType, hostOptions.AllowMockProvider);
+        var providerSetup = ProviderFactory.Create(providerType, configOptions.Providers);
         services.AddSingleton(providerSetup);
         providerSetup.ConfigureAuthentication(builder, pathOptions);
 
@@ -110,6 +110,24 @@ internal static class AuthenticationExtensions
             : throw new InvalidOperationException(
                 $"サポートされていない認証プロバイダーです: {provider}。" +
                 $"使用可能なプロバイダー: {string.Join(", ", Enum.GetNames<AuthProviderType>())}");
+    }
+
+    /// <summary>
+    /// Mock プロバイダーが許可されていなければ起動を止める
+    /// </summary>
+    /// <remarks>
+    /// Mock は誰にでもなりすませるため、設定の誤りで本番に出ないようにする。
+    /// </remarks>
+    private static void EnsureProviderAllowed(
+        AuthProviderType providerType,
+        bool allowMockProvider)
+    {
+        if (providerType == AuthProviderType.Mock && !allowMockProvider)
+        {
+            throw new InvalidOperationException(
+                "この環境では Mock 認証を使用できません。" +
+                $"{AuthenticationConfigOptions.SectionName}:Provider に EntraId または Google を設定してください。");
+        }
     }
 
     private static WebApplication MapSignOutEndpoint(

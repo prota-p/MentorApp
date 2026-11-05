@@ -43,7 +43,8 @@ var authHostOptions = new AuthenticationHostOptions
         SignOutPath = AuthRoutes.SignOut,
         PostLogoutRedirectPath = AuthRoutes.PostLogoutRedirect,
         OidcCallbackPath = AuthRoutes.OidcCallback
-    }
+    },
+    AllowMockProvider = builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing")
 };
 
 // Infrastructure層のサービス登録（DB、認証、外部サービス等）

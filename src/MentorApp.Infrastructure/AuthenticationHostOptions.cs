@@ -10,4 +10,7 @@ public sealed record AuthenticationHostOptions
 {
     /// <summary>認証関連のルーティングパス</summary>
     public required AuthenticationPathOptions Paths { get; init; }
+
+    /// <summary>Mock 認証を許可するか（どの環境で許可するかは Web 層が決める）</summary>
+    public required bool AllowMockProvider { get; init; }
 }

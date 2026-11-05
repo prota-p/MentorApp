@@ -243,6 +243,7 @@ Cookie の属性設定が不十分な場合、CSRF・セッションハイジャ
 - ロールベースのアクセス制御（Admin / Mentor / Mentee）
 - `AuthorizeView` によるロールに応じた UI 出力制御
 - ロール情報は IdP に依存せずアプリ独自で管理（`IClaimsTransformation`）
+- Mock 認証（externalId を指定するだけでサインインできる開発用の入口）は Development / Testing 環境でのみ使用でき、それ以外の環境で `Authentication:Provider` が `Mock` なら起動時に例外で止める（許可する環境は [Program.cs](../src/MentorApp.Web/Program.cs) で決め、判定は [AuthenticationExtensions.cs](../src/MentorApp.Infrastructure/Authentication/AuthenticationExtensions.cs) で行う）
 
 ただし、ロール変更は現在の SignalR 回線（接続中のページ）には即座に反映されない。次のページ遷移（HTTP リクエスト）のタイミングで `IClaimsTransformation` が再実行され DB から最新ロールが取得されるため、再ログインは不要。
 
