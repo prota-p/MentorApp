@@ -27,14 +27,14 @@ public static class InfrastructureExtensions
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration,
-        AuthenticationPathOptions authPathOptions)
+        AuthenticationHostOptions authHostOptions)
     {
         services.AddOptions<AuthenticationConfigOptions>()
             .Bind(configuration.GetSection(AuthenticationConfigOptions.SectionName))
             .ValidateOnStart();
 
         services.AddPersistence(configuration);
-        services.AddAuthentication(configuration, authPathOptions);
+        services.AddAuthentication(configuration, authHostOptions);
         services.AddTimeProvider();
 
         return services;
@@ -63,9 +63,9 @@ public static class InfrastructureExtensions
     /// </remarks>
     public static WebApplication MapInfrastructureEndpoints(
         this WebApplication app,
-        AuthenticationPathOptions authPathOptions)
+        AuthenticationHostOptions authHostOptions)
     {
-        app.MapAuthenticationEndpoints(authPathOptions);
+        app.MapAuthenticationEndpoints(authHostOptions.Paths);
         return app;
     }
 }

@@ -32,8 +32,10 @@ internal static class AuthenticationExtensions
     internal static IServiceCollection AddAuthentication(
         this IServiceCollection services,
         IConfiguration configuration,
-        AuthenticationPathOptions pathOptions)
+        AuthenticationHostOptions hostOptions)
     {
+        var pathOptions = hostOptions.Paths;
+
         // オプション設定（AuthenticationConfigOptions, PathOptions）
         services.AddOptions<AuthenticationConfigOptions>()
             .Bind(configuration.GetSection(AuthenticationConfigOptions.SectionName))

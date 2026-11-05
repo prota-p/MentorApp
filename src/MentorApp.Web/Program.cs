@@ -31,20 +31,23 @@ builder.Services.AddSingleton<TopicUpdateNotificationService>();
 // Application層のサービス登録（UseCase、Validator等）
 builder.Services.AddApplication();
 
-// 認証パス設定（Web層で一元管理）
-var authPathOptions = new AuthenticationPathOptions
+// 認証の設定のうち、Web層がコードで決めるもの
+var authHostOptions = new AuthenticationHostOptions
 {
-    LoginPath = PageRoutes.Login,
-    AccessDeniedPath = PageRoutes.AccessDenied,
-    PostLoginRedirectPath = PageRoutes.Home,
-    SignInPath = AuthRoutes.SignIn,
-    SignOutPath = AuthRoutes.SignOut,
-    PostLogoutRedirectPath = AuthRoutes.PostLogoutRedirect,
-    OidcCallbackPath = AuthRoutes.OidcCallback
+    Paths = new AuthenticationPathOptions
+    {
+        LoginPath = PageRoutes.Login,
+        AccessDeniedPath = PageRoutes.AccessDenied,
+        PostLoginRedirectPath = PageRoutes.Home,
+        SignInPath = AuthRoutes.SignIn,
+        SignOutPath = AuthRoutes.SignOut,
+        PostLogoutRedirectPath = AuthRoutes.PostLogoutRedirect,
+        OidcCallbackPath = AuthRoutes.OidcCallback
+    }
 };
 
 // Infrastructure層のサービス登録（DB、認証、外部サービス等）
-builder.Services.AddInfrastructure(builder.Configuration, authPathOptions);
+builder.Services.AddInfrastructure(builder.Configuration, authHostOptions);
 
 var app = builder.Build();
 
@@ -76,7 +79,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 // Infrastructure層のエンドポイント（認証関連など）
-app.MapInfrastructureEndpoints(authPathOptions);
+app.MapInfrastructureEndpoints(authHostOptions);
 
 app.Lifetime.ApplicationStarted.Register(() =>
 {

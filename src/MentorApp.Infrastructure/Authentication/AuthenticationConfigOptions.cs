@@ -8,7 +8,7 @@ namespace MentorApp.Infrastructure.Authentication;
 /// 認証の設定（appsettings の "Authentication" セクション）
 /// </summary>
 /// <remarks>
-/// 配置先ごとに変わる値を設定ファイルから読む。
+/// 配置先ごとに変わる値を設定ファイルから読む。コードで決める値は <see cref="AuthenticationHostOptions"/> が持つ。
 /// ASP.NET Core の AuthenticationOptions と名前が衝突しないよう、Config を付けている。
 /// </remarks>
 internal class AuthenticationConfigOptions
