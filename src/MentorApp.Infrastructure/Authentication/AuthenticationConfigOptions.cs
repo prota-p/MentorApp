@@ -4,7 +4,14 @@ using MentorApp.Infrastructure.Authentication.Providers.Google;
 
 namespace MentorApp.Infrastructure.Authentication;
 
-internal class AuthenticationOptions
+/// <summary>
+/// 認証の設定（appsettings の "Authentication" セクション）
+/// </summary>
+/// <remarks>
+/// 配置先ごとに変わる値を設定ファイルから読む。
+/// ASP.NET Core の AuthenticationOptions と名前が衝突しないよう、Config を付けている。
+/// </remarks>
+internal class AuthenticationConfigOptions
 {
     public const string SectionName = "Authentication";
 

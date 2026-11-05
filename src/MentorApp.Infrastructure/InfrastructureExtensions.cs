@@ -29,8 +29,8 @@ public static class InfrastructureExtensions
         IConfiguration configuration,
         AuthenticationPathOptions authPathOptions)
     {
-        services.AddOptions<AuthenticationOptions>()
-            .Bind(configuration.GetSection(AuthenticationOptions.SectionName))
+        services.AddOptions<AuthenticationConfigOptions>()
+            .Bind(configuration.GetSection(AuthenticationConfigOptions.SectionName))
             .ValidateOnStart();
 
         services.AddPersistence(configuration);

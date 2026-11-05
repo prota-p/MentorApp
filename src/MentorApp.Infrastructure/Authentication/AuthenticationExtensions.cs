@@ -34,17 +34,17 @@ internal static class AuthenticationExtensions
         IConfiguration configuration,
         AuthenticationPathOptions pathOptions)
     {
-        // オプション設定（AuthenticationOptions, PathOptions）
-        services.AddOptions<AuthenticationOptions>()
-            .Bind(configuration.GetSection(AuthenticationOptions.SectionName))
+        // オプション設定（AuthenticationConfigOptions, PathOptions）
+        services.AddOptions<AuthenticationConfigOptions>()
+            .Bind(configuration.GetSection(AuthenticationConfigOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
         services.AddSingleton(Options.Create(pathOptions));
 
-        var authOptions = configuration
-            .GetSection(AuthenticationOptions.SectionName)
-            .Get<AuthenticationOptions>()
-            ?? throw new InvalidOperationException($"{AuthenticationOptions.SectionName} の設定が見つかりません。");
+        var configOptions = configuration
+            .GetSection(AuthenticationConfigOptions.SectionName)
+            .Get<AuthenticationConfigOptions>()
+            ?? throw new InvalidOperationException($"{AuthenticationConfigOptions.SectionName} の設定が見つかりません。");
 
         // Cookie認証（全プロバイダ共通）
         var builder = services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -54,8 +54,8 @@ internal static class AuthenticationExtensions
         // プロバイダ固有の設定（認証スキーム追加）
         // ※フェーズ2で再利用するためDIにも登録
         var providerSetup = ProviderFactory.Create(
-            ParseProviderType(authOptions.Provider),
-            authOptions.Providers);
+            ParseProviderType(configOptions.Provider),
+            configOptions.Providers);
         services.AddSingleton(providerSetup);
         providerSetup.ConfigureAuthentication(builder, pathOptions);
 

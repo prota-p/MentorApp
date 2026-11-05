@@ -34,7 +34,7 @@ public static class InfrastructureInitialization
         await DatabaseInitializer.EnsureCreatedAsync(scopedServices);
 
         // 初期管理者のシード（UoW / Repository 経由）
-        var authOptions = scopedServices.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
+        var authOptions = scopedServices.GetRequiredService<IOptions<AuthenticationConfigOptions>>().Value;
         if (authOptions.InitialAdmin.IsConfigured)
         {
             var uowFactory = scopedServices.GetRequiredService<IUnitOfWorkFactory>();

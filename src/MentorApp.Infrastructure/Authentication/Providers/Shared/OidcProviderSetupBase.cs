@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using AuthOptions = Microsoft.AspNetCore.Authentication.AuthenticationOptions;
 
 namespace MentorApp.Infrastructure.Authentication.Providers.Shared;
 
@@ -55,7 +54,7 @@ internal abstract class OidcProviderSetupBase(
         // 【スキーム構成】
         // - DefaultScheme: Cookie（認証状態の保持）
         // - DefaultChallengeScheme: OIDC（未認証時のリダイレクト先）
-        builder.Services.Configure<AuthOptions>(authOptions =>
+        builder.Services.Configure<AuthenticationOptions>(authOptions =>
         {
             authOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             authOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
