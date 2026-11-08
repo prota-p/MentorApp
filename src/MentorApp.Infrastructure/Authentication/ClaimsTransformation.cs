@@ -24,8 +24,9 @@ namespace MentorApp.Infrastructure.Authentication;
 /// MemoryCache 等のキャッシュ層を導入する方法もある（その場合はユーザー情報
 /// 更新時のキャッシュ無効化も併せて実装が必要）。
 /// 
-/// 現在の実装では、ユーザー情報の変更（表示名・ロール等）は次回のページ遷移時に
-/// 即座に反映される。
+/// ここで足したクレームは HTTP の要求の側（ページの認可・静的 SSR の表示）で使われる。
+/// 回線（SignalR）は接続時の principal を持ち続け、リンクでページを移っても更新されないため、
+/// 回線の中のロール・表示名は CurrentUserService が DB から読む。
 /// </remarks>
 internal class ClaimsTransformation(
     IUserAuthenticationService userAuthService,
@@ -38,7 +39,7 @@ internal class ClaimsTransformation(
     internal const string AppEmailClaimType = "app_email";
     // Role は ClaimTypes.Role を使用
 
-    // DisplayName が取得できなかった場合のフォールバック値（CurrentUserService でも使用）
+    // DisplayName が取得できなかった場合のフォールバック値
     internal const string NoDisplayNameFallback = "no_display_name";
 
     /// <summary>
