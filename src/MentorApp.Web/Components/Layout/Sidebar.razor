@@ -1,6 +1,4 @@
-﻿@using MentorApp.Application.Contracts.Authentication
-@using MentorApp.Infrastructure.Authentication
-@inject NavigationManager Navigation
+﻿@inject NavigationManager Navigation
 
 @* 内側のAuthorizeViewとコンテキスト変数名の衝突を回避するため、Contextを明示的に指定 *@
 <AuthorizeView Roles="@AllRoles" Context="outerContext">

@@ -29,10 +29,6 @@ public static class InfrastructureExtensions
         IConfiguration configuration,
         AuthenticationHostOptions authHostOptions)
     {
-        services.AddOptions<AuthenticationConfigOptions>()
-            .Bind(configuration.GetSection(AuthenticationConfigOptions.SectionName))
-            .ValidateOnStart();
-
         services.AddPersistence(configuration);
         services.AddAuthentication(configuration, authHostOptions);
         services.AddTimeProvider();

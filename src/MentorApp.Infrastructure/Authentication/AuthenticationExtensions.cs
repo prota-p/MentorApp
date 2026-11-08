@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace MentorApp.Infrastructure.Authentication;
 
@@ -31,12 +30,11 @@ internal static class AuthenticationExtensions
     {
         var pathOptions = hostOptions.Paths;
 
-        // オプション設定（AuthenticationConfigOptions, PathOptions）
+        // 設定ファイルの認証の設定（起動時に検証する）
         services.AddOptions<AuthenticationConfigOptions>()
             .Bind(configuration.GetSection(AuthenticationConfigOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        services.AddSingleton(Options.Create(pathOptions));
 
         var configOptions = configuration
             .GetSection(AuthenticationConfigOptions.SectionName)
