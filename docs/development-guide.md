@@ -41,7 +41,8 @@
 - Cookie 認証 + Claims を用いてアプリ内セッションを確立
 - ロールは IdP に依存せず、アプリ独自に管理
 - 外部IdPの情報（sub等）は ExternalId として保持
-- IClaimsTransformation により外部認証結果 → アプリ内ロールクレームに変換
+- IClaimsTransformation により外部認証結果 → アプリ内ロールクレームに変換（HTTP リクエストごと。ページの `[Authorize(Roles)]` と静的 SSR の `AuthorizeView` が使う）
+- SignalR 回線の中では `CurrentUserService` が認証状態からユーザーIDだけを読み、ロール・表示名は DB から読む（回線の認証状態は接続時のまま更新されないため）
 - 認証基盤は Infrastructure 層に隠蔽し、Application / Web から切り離す
 
 ### 1.3 永続化の方針
@@ -97,6 +98,8 @@
 - UI層でロールを見て「どのメソッドを呼ぶか」を分岐させてはならない
 - 例：`if (isAdmin) GetAllAsync() else GetByUserIdAsync()` → NG
 - 例：`GetAccessibleAsync(currentUser)` → OK（Admin/非Adminの判断はサービス内で行う）
+- 例外：`CurrentUserService`（Infrastructure/Authentication）は `CurrentUser` を作るための読み取りなので対象外。QueryService と同じく DbContext から直接読む
+- UI層からサービス・QueryServiceへ渡す `CurrentUser` は、呼ぶ直前に `ICurrentUserService` で取る。部品が表示用に持つ写し（`displayUser`）は渡さない
 
 **Application Service：**
 - Command操作（作成、更新、削除）のみを提供

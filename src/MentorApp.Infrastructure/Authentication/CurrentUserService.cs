@@ -12,6 +12,8 @@ namespace MentorApp.Infrastructure.Authentication;
 /// 【役割】
 /// 認証状態からはユーザーIDだけを読み、ロール・表示名は DB から読む
 /// （回線の認証状態は接続時のまま更新されないため）。
+/// DB は QueryService と同じく DbContext から直接読む。CurrentUser を作るための読み取りなので、
+/// 開発ガイドの【認可規約】（全メソッドが CurrentUser を受け取る）の対象外。
 ///
 /// 【なぜ AuthenticationStateProvider を使うのか】
 /// Blazor Server では SignalR 接続上で動作するため HttpContext が常に利用可能とは限らない。

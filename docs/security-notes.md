@@ -245,7 +245,7 @@ Cookie の属性設定が不十分な場合、CSRF・セッションハイジャ
 - ロール情報は IdP に依存せずアプリ独自で管理（`IClaimsTransformation`）
 - Mock 認証（externalId を指定するだけでサインインできる開発用の入口）は Development / Testing 環境でのみ使用でき、それ以外の環境で `Authentication:Provider` が `Mock` なら起動時に例外で止める（許可する環境は [Program.cs](../src/MentorApp.Web/Program.cs) で決め、判定は [AuthenticationExtensions.cs](../src/MentorApp.Infrastructure/Authentication/AuthenticationExtensions.cs) で行う）
 
-ただし、ロール変更は現在の SignalR 回線（接続中のページ）には即座に反映されない。次のページ遷移（HTTP リクエスト）のタイミングで `IClaimsTransformation` が再実行され DB から最新ロールが取得されるため、再ログインは不要。
+ロール・表示名の正本は DB。HTTP リクエストでは `IClaimsTransformation` がリクエストごとに DB から読み、SignalR 回線（接続中のページ）の中では `CurrentUserService` が呼ばれるたびに DB から読む。権限が関わる操作は直前に取り直した `CurrentUser` で判断するため、ロール変更は再ログインなしで次の操作から効く。開いたままの画面の表示は、次の操作や読み直しまで古いことがある。
 
 ---
 
