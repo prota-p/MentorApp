@@ -51,7 +51,7 @@ else
     </div>
 }
 
-@if (AllowAdd && currentUser?.Role != Role.Admin)
+@if (AllowAdd && displayUser?.Role != Role.Admin)
 {
     <div class="mt-3">
         @if (!showAddForm)
@@ -75,7 +75,7 @@ else
     [Parameter] public bool AllowAdd { get; set; }
 
     private IReadOnlyList<TopicListItemDto>? topics;
-    private CurrentUser? currentUser;
+    private CurrentUser? displayUser;
     private bool isLoading = true;
     private bool showAddForm;
 
@@ -96,17 +96,17 @@ else
 
         try
         {
-            currentUser = await AuthService.GetCurrentUserAsync();
+            displayUser = await AuthService.GetCurrentUserAsync();
 
-            if (currentUser is null) { topics = []; return; }
+            if (displayUser is null) { topics = []; return; }
 
             if (FilterByMentorshipId.HasValue)
             {
-                topics = await TopicQuery.GetByMentorshipIdAsync(FilterByMentorshipId.Value, currentUser);
+                topics = await TopicQuery.GetByMentorshipIdAsync(FilterByMentorshipId.Value, displayUser);
             }
             else
             {
-                topics = await TopicQuery.GetAccessibleAsync(currentUser);
+                topics = await TopicQuery.GetAccessibleAsync(displayUser);
             }
         }
         catch (Exception)

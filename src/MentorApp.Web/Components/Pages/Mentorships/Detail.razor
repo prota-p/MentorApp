@@ -104,34 +104,37 @@
 [Parameter] public Guid Id { get; set; }
 
 private MentorshipDto? mentorship;
-    private CurrentUser? currentUser;
+    private CurrentUser? displayUser;  // 表示用の写し。LoadAsync でデータと一緒に読み直す。サービスへ渡すユーザーは操作の直前に取る
     private bool isLoading = true;
     private bool isProcessing;
 
-    private bool IsAdmin => currentUser?.Role == Role.Admin;
-    private bool IsMentor => currentUser?.Role == Role.Mentor && mentorship?.MentorUserId == currentUser?.UserId;
+    private bool IsAdmin => displayUser?.Role == Role.Admin;
+    private bool IsMentor => displayUser?.Role == Role.Mentor && mentorship?.MentorUserId == displayUser?.UserId;
     private bool CanComplete => IsAdmin || IsMentor;
     private bool CanCancel => IsAdmin;
     private bool CanDelete => IsAdmin;
 
     protected override async Task OnInitializedAsync()
     {
-        currentUser = await AuthService.GetCurrentUserAsync();
-
-        if (currentUser is null) { isLoading = false; return; }
-
-        mentorship = await MentorshipQuery.GetByIdAsync(Id, currentUser);
+        await LoadAsync();
         isLoading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        displayUser = await AuthService.GetCurrentUserAsync();
+        mentorship = displayUser is null ? null : await MentorshipQuery.GetByIdAsync(Id, displayUser);
     }
 
     private async Task ChangeStatusAsync(bool complete)
     {
-        if (currentUser is null) return;
-
         isProcessing = true;
 
         try
         {
+            var currentUser = await AuthService.GetCurrentUserAsync();
+            if (currentUser is null) return;
+
             if (complete)
             {
                 await MentorshipService.CompleteMentorshipAsync(Id, currentUser);
@@ -142,8 +145,6 @@ private MentorshipDto? mentorship;
                 await MentorshipService.CancelMentorshipAsync(Id, currentUser);
                 ToastService.ShowSuccess("メンタリングを中止しました。");
             }
-            // 更新後、DTOを再取得
-            mentorship = await MentorshipQuery.GetByIdAsync(Id, currentUser);
         }
         catch (Exception)
         {
@@ -153,17 +154,19 @@ private MentorshipDto? mentorship;
         finally
         {
             isProcessing = false;
+            await LoadAsync();
         }
     }
 
     private async Task DeleteAsync()
     {
-        if (currentUser is null) return;
-
         isProcessing = true;
 
         try
         {
+            var currentUser = await AuthService.GetCurrentUserAsync();
+            if (currentUser is null) return;
+
             await MentorshipService.DeleteMentorshipAsync(Id, currentUser);
             ToastService.ShowSuccess("メンタリング関係を削除しました。");
             Navigation.NavigateTo(PageRoutes.Mentorships);
@@ -171,6 +174,7 @@ private MentorshipDto? mentorship;
         catch (Exception)
         {
             ToastService.ShowError("削除処理に失敗しました");
+            await LoadAsync();  // 成功すれば一覧へ移るので、失敗したときだけ読み直す
         }
         finally
         {

@@ -8,7 +8,7 @@
                     id="userMenuDropdown" 
                     data-bs-toggle="dropdown" 
                     aria-expanded="false">
-                @currentUser?.DisplayName (@currentUser?.Role)
+                @displayUser?.DisplayName (@displayUser?.Role)
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuDropdown">
                 <li>
@@ -31,10 +31,10 @@
 </AuthorizeView>
 
 @code {
-    private CurrentUser? currentUser;
+    private CurrentUser? displayUser;
 
     protected override async Task OnInitializedAsync()
     {
-        currentUser = await AuthService.GetCurrentUserAsync();
+        displayUser = await AuthService.GetCurrentUserAsync();
     }
 }

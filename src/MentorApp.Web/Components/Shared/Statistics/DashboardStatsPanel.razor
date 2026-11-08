@@ -22,27 +22,27 @@
 }
 
 @code {
-    private CurrentUser? currentUser;
+    private CurrentUser? displayUser;
     private AdminStatsDto? adminStats;
     private UserStatsDto? userStats;
 
     protected override async Task OnInitializedAsync()
     {
-        currentUser = await AuthService.GetCurrentUserAsync();
+        displayUser = await AuthService.GetCurrentUserAsync();
 
-        if (currentUser is null) return;
+        if (displayUser is null) return;
 
-        if (currentUser.Role == Role.Admin)
+        if (displayUser.Role == Role.Admin)
         {
-            adminStats = await StatsQuery.GetAdminStatsAsync(currentUser);
+            adminStats = await StatsQuery.GetAdminStatsAsync(displayUser);
         }
         else
         {
-            userStats = await StatsQuery.GetUserStatsAsync(currentUser);
+            userStats = await StatsQuery.GetUserStatsAsync(displayUser);
         }
     }
 
-    private string GetTitle() => currentUser?.Role switch
+    private string GetTitle() => displayUser?.Role switch
     {
         Role.Admin => "システム統計",
         Role.Mentor => "メンター統計",
@@ -52,7 +52,7 @@
 
     private IEnumerable<StatItem> GetStatItems()
     {
-        if (currentUser is null) yield break;
+        if (displayUser is null) yield break;
 
         // Admin 専用の統計
         if (adminStats is not null)
@@ -68,7 +68,7 @@
         // Mentor / Mentee 共通の統計（ラベルだけ変える）
         if (userStats is not null)
         {
-            var mentorshipLabel = currentUser.Role == Role.Mentor ? "担当メンティー数" : "メンター数";
+            var mentorshipLabel = displayUser.Role == Role.Mentor ? "担当メンティー数" : "メンター数";
 
             yield return new(mentorshipLabel, userStats.TotalMentorships, 4);
             yield return new("アクティブなメンタリング", userStats.ActiveMentorships, 4);

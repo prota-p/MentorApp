@@ -1,7 +1,7 @@
 ﻿@* クイックアクションパネル - ロール別のショートカットリンクを表示 *@
 @inject ICurrentUserService AuthService
 
-@if (currentUser is not null)
+@if (displayUser is not null)
 {
     <div class="card mt-4">
         <div class="card-header">
@@ -19,18 +19,18 @@
 }
 
 @code {
-    private CurrentUser? currentUser;
+    private CurrentUser? displayUser;
 
     protected override async Task OnInitializedAsync()
     {
-        currentUser = await AuthService.GetCurrentUserAsync();
+        displayUser = await AuthService.GetCurrentUserAsync();
     }
 
     private IEnumerable<ActionItem> GetActions()
     {
-        if (currentUser is null) yield break;
+        if (displayUser is null) yield break;
 
-        if (currentUser.Role == Role.Admin)
+        if (displayUser.Role == Role.Admin)
         {
             yield return new("ユーザー管理", PageRoutes.Users);
             yield return new("メンタリング管理", PageRoutes.Mentorships);

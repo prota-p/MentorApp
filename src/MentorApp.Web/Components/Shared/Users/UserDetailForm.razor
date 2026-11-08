@@ -123,7 +123,6 @@ else
     public UserDetailFormMode Mode { get; set; } = UserDetailFormMode.Profile;
 
     private UserDto? targetUser;
-    private CurrentUser? currentUser;
     private UserUpdateModel updateModel = new();
     private DomainEditContext? editContext;
     private bool isLoading = true;
@@ -138,12 +137,15 @@ else
 
     private async Task OnSubmitAsync()
     {
-        if (targetUser is null || currentUser is null || editContext is null || !editContext.Validate()) return;
+        if (targetUser is null || editContext is null || !editContext.Validate()) return;
 
         isSaving = true;
 
         try
         {
+            var currentUser = await CurrentUserService.GetCurrentUserAsync();
+            if (currentUser is null) return;
+
             var request = new UpdateUserRequest(targetUser.Id, updateModel.DisplayName!, updateModel.Role);
             var updatedUser = await UserService.UpdateUserAsync(request, currentUser);
 
@@ -172,7 +174,7 @@ else
 
         try
         {
-            currentUser = await CurrentUserService.GetCurrentUserAsync();
+            var currentUser = await CurrentUserService.GetCurrentUserAsync();
             if (currentUser is null) { targetUser = null; return; }
 
             var resolvedId = ResolveTargetUserId(currentUser);

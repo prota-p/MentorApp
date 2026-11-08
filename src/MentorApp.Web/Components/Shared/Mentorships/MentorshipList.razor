@@ -100,28 +100,28 @@ else
     private bool ShowMenteeColumn => !FixedMenteeId.HasValue;
 
     private IReadOnlyList<MentorshipDto>? mentorships;
-    private CurrentUser? currentUser;
+    private CurrentUser? displayUser;  // 表示用の写し。LoadAsync でデータと一緒に読み直す。サービスへ渡すユーザーは操作の直前に取る
     private bool isLoading = true;
     private bool isProcessing;
     private bool showAddForm;
 
     private bool IsEmpty => mentorships is null || mentorships.Count == 0;
-    private bool ShouldShowAddButton => AllowEdit && currentUser?.Role == Role.Admin;
-    private bool ShouldShowStatusChangeColumn => AllowEdit && currentUser?.Role == Role.Admin;
+    private bool ShouldShowAddButton => AllowEdit && displayUser?.Role == Role.Admin;
+    private bool ShouldShowStatusChangeColumn => AllowEdit && displayUser?.Role == Role.Admin;
 
-    protected override async Task OnInitializedAsync() => await LoadDataAsync();
+    protected override async Task OnInitializedAsync() => await LoadAsync();
 
-    private async Task LoadDataAsync()
+    private async Task LoadAsync()
     {
         isLoading = true;
 
         try
         {
-            currentUser = await AuthService.GetCurrentUserAsync();
+            displayUser = await AuthService.GetCurrentUserAsync();
 
-            if (currentUser is not null)
+            if (displayUser is not null)
             {
-                mentorships = await MentorshipQuery.GetAccessibleAsync(currentUser, FilterByUserId);
+                mentorships = await MentorshipQuery.GetAccessibleAsync(displayUser, FilterByUserId);
             }
             else
             {
@@ -142,30 +142,26 @@ else
     private async Task OnMentorshipAddedAsync()
     {
         showAddForm = false;
-        await LoadDataAsync();
+        await LoadAsync();
     }
 
-    private Task CompleteAsync(Guid mentorshipId) => ChangeStatusAsync(mentorshipId, "完了", async () =>
-    {
-        if (currentUser is null) return;
-        await MentorshipService.CompleteMentorshipAsync(mentorshipId, currentUser);
-    });
+    private Task CompleteAsync(Guid mentorshipId) => ChangeStatusAsync(mentorshipId, "完了",
+        currentUser => MentorshipService.CompleteMentorshipAsync(mentorshipId, currentUser));
 
-    private Task CancelAsync(Guid mentorshipId) => ChangeStatusAsync(mentorshipId, "中止", async () =>
-    {
-        if (currentUser is null) return;
-        await MentorshipService.CancelMentorshipAsync(mentorshipId, currentUser);
-    });
+    private Task CancelAsync(Guid mentorshipId) => ChangeStatusAsync(mentorshipId, "中止",
+        currentUser => MentorshipService.CancelMentorshipAsync(mentorshipId, currentUser));
 
-    private async Task ChangeStatusAsync(Guid mentorshipId, string action, Func<Task> operation)
+    private async Task ChangeStatusAsync(Guid mentorshipId, string action, Func<CurrentUser, Task> operation)
     {
         isProcessing = true;
 
         try
         {
-            await operation();
+            var currentUser = await AuthService.GetCurrentUserAsync();
+            if (currentUser is null) return;
+
+            await operation(currentUser);
             ToastService.ShowSuccess($"メンタリングを{action}しました。");
-            await LoadDataAsync();
         }
         catch (Exception)
         {
@@ -174,6 +170,7 @@ else
         finally
         {
             isProcessing = false;
+            await LoadAsync();
         }
     }
 

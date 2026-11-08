@@ -96,7 +96,7 @@
                 </div>
 
                 @* メッセージ投稿フォーム（管理者は閲覧のみのため非表示） *@
-                @if (currentUser?.Role != Role.Admin)
+                @if (displayUser?.Role != Role.Admin)
                 {
                     @if (topic.Status == TopicStatus.Open)
                     {
@@ -145,7 +145,7 @@
     public Guid TopicId { get; set; }
 
     private TopicDetailDto? topic;
-    private CurrentUser? currentUser;
+    private CurrentUser? displayUser;  // 表示用の写し。LoadAsync でデータと一緒に読み直す。サービスへ渡すユーザーは操作の直前に取る
     private bool isLoading = true;
     private bool isPosting;
     private MessageForm messageForm = new();
@@ -156,14 +156,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        currentUser = await AuthService.GetCurrentUserAsync();
-
         TopicUpdateNotificationService.OnTopicUpdated += HandleTopicUpdate;
 
         InitializeEditContext();
-        if (currentUser is null) { isLoading = false; return; }
-        topic = await TopicQuery.GetByIdAsync(TopicId, currentUser);
+        await LoadAsync();
         isLoading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        displayUser = await AuthService.GetCurrentUserAsync();
+        topic = displayUser is null ? null : await TopicQuery.GetByIdAsync(TopicId, displayUser);
     }
 
     private void InitializeEditContext()
@@ -176,13 +179,13 @@
 
     private async void HandleTopicUpdate(Guid topicId)
     {
-        if (topicId != TopicId || currentUser is null) return;
+        if (topicId != TopicId) return;
 
         await InvokeAsync(async () =>
         {
             try
             {
-                topic = await TopicQuery.GetByIdAsync(TopicId, currentUser);
+                await LoadAsync();
                 StateHasChanged();
                 await ScrollToBottomAsync();
             }
@@ -195,7 +198,7 @@
 
     private async Task PostMessageAsync()
     {
-        if (topic is null || currentUser is null) return;
+        if (topic is null) return;
 
         if (!editContext.Validate()) return;
 
@@ -203,6 +206,9 @@
 
         try
         {
+            var currentUser = await AuthService.GetCurrentUserAsync();
+            if (currentUser is null) return;
+
             var request = new PostMessageRequest(
                 TopicId: topic.Id,
                 SenderUserId: currentUser.UserId,
@@ -224,6 +230,7 @@
         finally
         {
             isPosting = false;
+            await LoadAsync();
         }
     }
 
@@ -235,10 +242,13 @@
 
     private async Task CloseTopicAsync()
     {
-        if (topic is null || currentUser is null) return;
+        if (topic is null) return;
 
         try
         {
+            var currentUser = await AuthService.GetCurrentUserAsync();
+            if (currentUser is null) return;
+
             await TopicService.CloseTopicAsync(topic.Id, currentUser);
 
             TopicUpdateNotificationService.NotifyTopicUpdated(topic.Id);
@@ -249,15 +259,19 @@
         {
             ToastService.ShowError("トピックのクローズに失敗しました");
         }
+        finally
+        {
+            await LoadAsync();
+        }
     }
 
     private bool IsRightSideMessage(MessageDto message)
     {
-        if (currentUser is null || topic is null) return false;
+        if (displayUser is null || topic is null) return false;
 
-        var isParticipant = currentUser.UserId == topic.MentorUserId || currentUser.UserId == topic.MenteeUserId;
+        var isParticipant = displayUser.UserId == topic.MentorUserId || displayUser.UserId == topic.MenteeUserId;
         return isParticipant
-            ? message.SenderUserId == currentUser.UserId
+            ? message.SenderUserId == displayUser.UserId
             : message.SenderUserId == topic.MentorUserId;
     }
 
