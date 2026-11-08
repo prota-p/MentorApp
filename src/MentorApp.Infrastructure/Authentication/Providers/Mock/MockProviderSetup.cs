@@ -16,9 +16,9 @@ namespace MentorApp.Infrastructure.Authentication.Providers.Mock;
 /// クレーム変換（ClaimsTransformation）の仕組みを理解するための最初の題材として有用。
 /// 
 /// 【認証フロー】
-/// 1. クライアントが /authentication/login?externalId=xxx にアクセス
+/// 1. クライアントがサインインのパスに externalId を付けてアクセス
 /// 2. クエリパラメータから外部IDを取得し、Entra ID 形式のクレームを生成
-/// 3. Cookie に署名して保存 → 認証完了
+/// 3. クレームを暗号化して Cookie に保存 → 認証完了
 /// 4. 以降のリクエストで ClaimsTransformation がアプリ固有クレームを追加
 /// 
 /// 【Entra ID との違い】
@@ -44,10 +44,6 @@ internal class MockProviderSetup : IProviderSetup
     /// <summary>
     /// クレームマッピング定義
     /// </summary>
-    /// <remarks>
-    /// ClaimsTransformation が外部クレームからユーザー情報を抽出する際に使用。
-    /// Entra ID と同じクレームタイプを使用することで、同じ変換ロジックが適用される。
-    /// </remarks>
     public IdentityClaimMappings ClaimMappings { get; } = new()
     {
         ExternalIdClaims = [OidClaimType],
@@ -59,22 +55,19 @@ internal class MockProviderSetup : IProviderSetup
     /// 認証スキームを設定する
     /// </summary>
     /// <remarks>
-    /// Mock プロバイダーは Cookie 認証のみで完結するため、
-    /// 追加のスキーム（OIDC 等）は登録しない。
-    /// Cookie 認証は AuthenticationSetup で共通設定済み。
+    /// Cookie 認証だけで完結するため、追加のスキームは登録しない。
     /// </remarks>
     public void ConfigureAuthentication(AuthenticationBuilder builder, AuthenticationPathOptions pathOptions)
     {
-        // 追加のスキーム登録は不要
     }
 
     /// <summary>
     /// サインインエンドポイントを登録する
     /// </summary>
     /// <remarks>
-    /// GET /authentication/login?externalId=xxx&amp;displayName=yyy&amp;ReturnUrl=/path
+    /// クエリパラメータ:
     /// - externalId: 必須。ユーザーを識別する外部ID
-    /// - displayName: 任意。省略時は「テストユーザー」
+    /// - displayName: 任意。省略時は既定の表示名
     /// - ReturnUrl: 任意。ログイン後のリダイレクト先
     /// </remarks>
     public void MapSignInEndpoint(WebApplication app, AuthenticationPathOptions pathOptions)
@@ -93,8 +86,6 @@ internal class MockProviderSetup : IProviderSetup
             }
 
             // クレーム生成: Entra ID の oid/name/email クレームを模倣
-            // ※本来の OIDC 認証では外部プロバイダーからトークン経由で自動取得されるが、
-            //   Mock ではテスト用にクエリパラメータから手動で生成している
             var claims = new List<Claim>
             {
                 new(OidClaimType, externalId),

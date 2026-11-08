@@ -238,7 +238,7 @@ Cookie の属性設定が不十分な場合、CSRF・セッションハイジャ
 
 **実装：**
 - 外部 IdP（OIDC）による認証（Entra ID / Google）
-- Cookie 認証によるサーバーサイドセッション管理
+- Cookie 認証によるログイン状態の保持（クレームを暗号化して Cookie に入れる。ログイン状態をサーバー側の DB やメモリには保存しない）
 - 全認証済みページに `[Authorize]` 属性を付与
 - ロールベースのアクセス制御（Admin / Mentor / Mentee）
 - `AuthorizeView` によるロールに応じた UI 出力制御

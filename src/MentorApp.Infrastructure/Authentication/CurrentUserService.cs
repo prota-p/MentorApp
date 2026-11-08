@@ -15,7 +15,7 @@ namespace MentorApp.Infrastructure.Authentication;
 /// 
 /// 【なぜ AuthenticationStateProvider を使うのか】
 /// Blazor Server では SignalR 接続上で動作するため HttpContext が常に利用可能とは限らない。
-/// AuthenticationStateProvider を使用することで、どの状況でも認証状態にアクセスできる。
+/// AuthenticationStateProvider を使用することで、HTTP リクエストの処理中（静的 SSR）でも回線の中でも、同じ方法で認証状態を読める。
 /// </remarks>
 internal class CurrentUserService(
     AuthenticationStateProvider authenticationStateProvider) : ICurrentUserService

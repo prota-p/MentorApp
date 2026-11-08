@@ -18,11 +18,6 @@ namespace MentorApp.Infrastructure.Authentication;
 /// <remarks>
 /// - AddAuthentication: フェーズ1（サービス登録）で使用
 /// - MapAuthenticationEndpoints: フェーズ2（ミドルウェア構成）で使用
-/// 
-/// IAuthenticationProviderSetup について:
-/// フェーズ1でプロバイダ種別に応じた認証スキーム設定が必要なため、
-/// フェーズ1で直接インスタンスを生成し、DIコンテナにも登録している。
-/// フェーズ2ではDIから取得することで、同一インスタンスの再利用を保証する。
 /// </remarks>
 internal static class AuthenticationExtensions
 {
@@ -54,7 +49,6 @@ internal static class AuthenticationExtensions
         services.ConfigureCookieDefaults(pathOptions);
 
         // プロバイダ固有の設定（認証スキーム追加）
-        // ※フェーズ2で再利用するためDIにも登録
         var providerType = ParseProviderType(configOptions.Provider);
         EnsureProviderAllowed(providerType, hostOptions.AllowMockProvider);
         var providerSetup = ProviderFactory.Create(providerType, configOptions.Providers);
@@ -91,7 +85,6 @@ internal static class AuthenticationExtensions
         this WebApplication app,
         AuthenticationPathOptions pathOptions)
     {
-        // フェーズ1で登録済みのインスタンスを取得
         var providerSetup = app.Services.GetRequiredService<IProviderSetup>();
 
         // サインイン（プロバイダ固有）

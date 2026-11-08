@@ -14,7 +14,7 @@ namespace MentorApp.Infrastructure.Authentication.Providers.Shared;
 /// ライフサイクル:
 /// - フェーズ1（サービス登録）: ConfigureAuthentication
 /// - フェーズ2（ミドルウェア構成）: MapSignInEndpoint
-/// フェーズ間で同一インスタンスを共有するため、DIコンテナにシングルトンとして登録される。
+/// フェーズ1ではまだ DI コンテナから取り出せないため直接生成し、フェーズ2で同じインスタンスを使えるようシングルトンとして登録する。
 /// </remarks>
 internal interface IProviderSetup
 {

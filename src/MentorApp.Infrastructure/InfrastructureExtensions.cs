@@ -45,7 +45,7 @@ public static class InfrastructureExtensions
     /// </summary>
     /// <remarks>
     /// Application層の統合テストで使用。認証なしでテスト可能。
-    /// IClock は登録されないため、テスト側で差し替えが必要。
+    /// TimeProvider は登録されないため、テスト側で登録が必要。
     /// </remarks>
     public static IServiceCollection AddPersistenceOnly(
         this IServiceCollection services,

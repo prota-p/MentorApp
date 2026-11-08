@@ -11,14 +11,11 @@ namespace MentorApp.Infrastructure.Authentication;
 /// <remarks>
 /// 【クレームの変換】
 /// principal には外部プロバイダのクレームが既にある。
-/// そこから3項目（ExternalId, DisplayName, Email）を使い、
-/// 5項目（app_user_id, app_external_id, app_display_name, app_email, Role）を追加する。
-/// - 初回ログイン: app_user_id を新規採番、Role はデフォルト（Mentee）で DB に登録
-/// - 2回目以降: DB から取得
-/// principal に5項目が追加済みなら即終了（同一リクエスト内の重複呼び出し対策）。
+/// そこから3項目（外部ID・表示名・メール）を使い、DB のユーザー情報を5項目のアプリ固有クレームとして追加する。
+/// 初回はユーザーを DB に新規登録し、以降は DB から取得する。
 /// 
 /// 【実行タイミングとパフォーマンス】
-/// このクラスは ASP.NET Core の認証ミドルウェアから HTTP リクエストごとに呼び出される。
+/// このクラスは ASP.NET Core の認証ミドルウェアから、認証済みの HTTP リクエストごとに呼び出される。
 /// Blazor の Enhanced Navigation も内部的には fetch() による HTTP リクエストのため、
 /// ページ遷移のたびに DB アクセスが発生する。
 /// 

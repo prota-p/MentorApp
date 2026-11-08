@@ -18,7 +18,6 @@ internal class EntraIdProviderSetup(EntraIdProviderOptions options)
             "oid"
         ],
         DisplayNameClaims = ["name", ClaimTypes.Name],
-        // email → preferred_username → ClaimTypes.Email の順
         EmailClaims = ["email", "preferred_username", ClaimTypes.Email]
     };
 }

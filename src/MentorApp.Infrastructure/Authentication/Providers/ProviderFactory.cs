@@ -9,8 +9,8 @@ namespace MentorApp.Infrastructure.Authentication.Providers;
 /// 認証プロバイダー設定のファクトリ
 /// </summary>
 /// <remarks>
-/// AuthProviderType に応じた IAuthenticationProviderSetup 実装を生成する。
-/// プロバイダ種別による分岐をこのファクトリに集約し、他の箇所での分岐を排除する。
+/// AuthProviderType に応じた IProviderSetup 実装を生成する。
+/// 生成する実装を選ぶ分岐をこのファクトリに集約する。
 /// </remarks>
 internal static class ProviderFactory
 {

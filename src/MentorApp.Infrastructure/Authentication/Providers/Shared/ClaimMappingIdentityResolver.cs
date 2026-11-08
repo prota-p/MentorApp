@@ -36,10 +36,6 @@ internal record ExternalIdentity(string ExternalId, string? DisplayName, string 
 /// <summary>
 /// クレームマッピングに基づいて識別情報を抽出するリゾルバー
 /// </summary>
-/// <remarks>
-/// 認証プロバイダーごとにクレームの形式が異なるため、
-/// IdentityClaimMappings の設定に基づいて統一的に処理する。
-/// </remarks>
 internal class ClaimMappingIdentityResolver(IdentityClaimMappings mappings)
 {
     public ExternalIdentity? ResolveIdentity(ClaimsPrincipal principal)
