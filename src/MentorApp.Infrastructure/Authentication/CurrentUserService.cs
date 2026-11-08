@@ -1,7 +1,7 @@
-﻿using System.Security.Claims;
-using MentorApp.Application.Contracts.Authentication;
-using MentorApp.Domain.Models.Users;
+﻿using MentorApp.Application.Contracts.Authentication;
+using MentorApp.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace MentorApp.Infrastructure.Authentication;
 
@@ -10,15 +10,16 @@ namespace MentorApp.Infrastructure.Authentication;
 /// </summary>
 /// <remarks>
 /// 【役割】
-/// ClaimsTransformation が追加したアプリ固有クレームを読み取り、
-/// CurrentUser オブジェクトとして返す。
-/// 
+/// 認証状態からはユーザーIDだけを読み、ロール・表示名は DB から読む
+/// （回線の認証状態は接続時のまま更新されないため）。
+///
 /// 【なぜ AuthenticationStateProvider を使うのか】
 /// Blazor Server では SignalR 接続上で動作するため HttpContext が常に利用可能とは限らない。
 /// AuthenticationStateProvider を使用することで、HTTP リクエストの処理中（静的 SSR）でも回線の中でも、同じ方法で認証状態を読める。
 /// </remarks>
 internal class CurrentUserService(
-    AuthenticationStateProvider authenticationStateProvider) : ICurrentUserService
+    AuthenticationStateProvider authenticationStateProvider,
+    IDbContextFactory<AppDbContext> dbContextFactory) : ICurrentUserService
 {
     public async Task<CurrentUser?> GetCurrentUserAsync()
     {
@@ -32,23 +33,19 @@ internal class CurrentUserService(
             return null;
         }
 
-        // ClaimsTransformation が追加したアプリ固有クレームを取得
+        // ClaimsTransformation が追加したユーザーIDを取得
         var userIdClaim = user.FindFirst(ClaimsTransformation.AppUserIdClaimType)?.Value;
-        var userId = Guid.TryParse(userIdClaim, out var id) ? id : Guid.Empty;
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            return null;
+        }
 
-        var roleClaim = user.FindFirst(ClaimTypes.Role)?.Value;
-        var role = Enum.TryParse<Role>(roleClaim, out var r) ? r : Role.Mentee;
-
-        var displayName = user.FindFirst(ClaimsTransformation.AppDisplayNameClaimType)?.Value
-            ?? ClaimsTransformation.NoDisplayNameFallback;
-        var externalId = user.FindFirst(ClaimsTransformation.AppExternalIdClaimType)?.Value
-            ?? string.Empty;
-
-        return new CurrentUser(
-            UserId: userId,
-            ExternalId: externalId,
-            DisplayName: displayName,
-            Role: role
-        );
+        // ユーザーが削除されていれば null
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        return await dbContext.Users
+            .AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(u => new CurrentUser(u.Id, u.ExternalId, u.DisplayName, u.Role))
+            .FirstOrDefaultAsync();
     }
 }
